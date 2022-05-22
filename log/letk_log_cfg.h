@@ -22,6 +22,6 @@
 /* 日志输出buf大小，单位：字节 */
 #define LETK_LOG_BUF_SIZE       256
 /* 是否使用printf函数来打印日志，否则需要用户自己实现打印接口 */
-#define LETK_LOG_USE_PRINTF     1
+#define LETK_LOG_USE_PRINTF     0
 
 #endif  /* __LETK_LOG_CFG_H__ */

@@ -180,7 +180,7 @@ void letk_timer_stop(letk_timer_t* ptimer)
 /**
  * @brief 定时器事件轮询处理
  */
-void letk_timer_poll_event(void)
+void letk_timer_poll(void)
 {
     letk_timer_t* pt;
     do

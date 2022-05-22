@@ -25,29 +25,29 @@ extern "C" {
 #endif  /* __cplusplus */
 
 /**
- * @brief       系统增加指定的ms数
- * @param[in]   ms - 一个tick流逝的ms数
+ * @brief 系统增加指定的ms数
+ * @param[in] ms 一个tick流逝的ms数
  */
 void letk_ticks_inc_ms(uint32_t ms);
 
 /**
- * @brief       获取系统当前的ms数
- * @return      系统当前的ms数
+ * @brief 获取系统当前的ms数
+ * @return 系统当前的ms数
  */
 uint32_t letk_ticks_get_ms(void);
 
 /**
- * @brief       获取相对于上一时刻流逝的ms数
- * @param[in]   last_ms - 上一时刻的ms值
- * @return      流逝的ms数
+ * @brief 获取相对于上一时刻流逝的ms数
+ * @param[in] last_ms 上一时刻的ms值
+ * @return 流逝的ms数
  */
 uint32_t letk_ticks_elapsed_ms(uint32_t last_ms);
 
 /**
- * @brief       判断相对于上一时刻是否超过间隔的ms数
- * @param[in]   last_ms - 上一时刻的ms值
- * @param[in]   interval - 间隔的ms数
- * @return      是否超时
+ * @brief 判断相对于上一时刻是否超过间隔的ms数
+ * @param[in] last_ms 上一时刻的ms值
+ * @param[in] interval 间隔的ms数
+ * @return 是否超时
  */
 bool letk_ticks_is_timeout(uint32_t last_ms, uint32_t interval);
 

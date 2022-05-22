@@ -36,9 +36,8 @@ static char log_buf[LETK_LOG_BUF_SIZE];
 static letk_log_print_cb_t *user_print_cb = NULL;
 
 /**
- * @brief       注册日志打印回调函数
- * @param[in]   print_cb - 打印日志回调函数指针
- * @return      无
+ * @brief 注册日志打印回调函数
+ * @param[in] print_cb 打印日志回调函数指针
  */
 void letk_log_register_print_cb(letk_log_print_cb_t *print_cb)
 {
@@ -47,14 +46,13 @@ void letk_log_register_print_cb(letk_log_print_cb_t *print_cb)
 #endif  /* !LETK_LOG_USE_PRINTF */
 
 /**
- * @brief       输出一条日志，此函数内部宏使用，用户不要直接使用
- * @param[in]   level - 日志等级
- * @param[in]   file  - 当前代码路径
- * @param[in]   line  - 当前代码行号
- * @param[in]   func  - 当前代码函数名
- * @param[in]   fmt   - 格式化字符串
- * @param[in]   ...   - 可变参数，fmt中的格式排列
- * @return      无
+ * @brief 输出一条日志，此函数内部宏使用，用户不要直接使用
+ * @param[in] level 日志等级
+ * @param[in] file 当前代码路径
+ * @param[in] line 当前代码行号
+ * @param[in] func 当前代码函数名
+ * @param[in] fmt 格式化字符串
+ * @param[in] ... 可变参数，fmt中的格式排列
  */
 void _letk_log_output(letk_log_level_t level, const char* file, int line, const char* func, const char* fmt, ...)
 {

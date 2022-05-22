@@ -18,46 +18,12 @@
 *******************************************************************************/
 
 #include "letk_cli.h"
+#include <stdint.h>
 #include <stddef.h>
 #include <string.h>
 #include <stdlib.h>
 
 #if LETK_CLI_ENABLE
-
-#if (LETK_CLI_CC == LETK_CLI_CC_VS)
-/* Microsoft VC/C++ 编译器没有找到段起始和终止的操作宏，需要特殊处理 */
-__declspec(allocate(".letk_cli_cmd_section$a"))
-static const letk_cli_cmd_t __letk_cli_cmd_begin =
-{
-    .name = "__start",
-    .usage = "start of cli",
-    .cb = NULL,
-};
-__declspec(allocate(".letk_cli_cmd_section$c"))
-static const letk_cli_cmd_t __letk_cli_cmd_end =
-{
-    .name = "__end",
-    .usage = "end of cli",
-    .cb = NULL,
-};
-#endif  /* LETK_CLI_CC == LETK_CLI_CC_VS */
-
-#if (LETK_CLI_CC == LETK_CLI_CC_MINGW)
-__attribute__((used)) __attribute__((section(".letk_cli_cmd_section$a")))
-static const letk_cli_cmd_t __letk_cli_cmd_begin =
-{
-    .name = "__start",
-    .usage = "start of cli",
-    .cb = NULL,
-};
-__attribute__((used)) __attribute__((section(".letk_cli_cmd_section$c")))
-static const letk_cli_cmd_t __letk_cli_cmd_end =
-{
-    .name = "__end",
-    .usage = "end of cli",
-    .cb = NULL,
-};
-#endif  /* LETK_CLI_CC == LETK_CLI_CC_VS */
 
 /* 输入状态定义 */
 typedef enum
@@ -65,10 +31,6 @@ typedef enum
     LETK_CLI_INPUT_WAIT_NORMAL,       /* 等待正常字符 */
     LETK_CLI_INPUT_WAIT_SPEC_KEY,     /* 等待特殊字符 */
     LETK_CLI_INPUT_WAIT_FUNC_KEY,     /* 等待功能字符 */
-#if (LETK_CLI_CC == LETK_CLI_CC_VS) || (LETK_CLI_CC == LETK_CLI_CC_MINGW) || \
-    ((LETK_CLI_CC == LETK_CLI_CC_ANY) && defined _MSC_VER)
-    LETK_CLI_INPUT_WAIT_FUNC_KEY1,    /* 等待功能字符1 */
-#endif
 } letk_cli_input_status_t;
 
 /* CLI管理器 */
@@ -81,7 +43,7 @@ typedef struct
     letk_cli_out_char_cb_t *pf_outchar;                     /* 输出字符回调函数 */
     const int*              p_cmd_start;                    /* 命令存储区起始指针 */
     const int*              p_cmd_end;                      /* 命令存储区结束指针 */
-    const char*             p_cmd_notice;                   /* 命令提示符 */
+    const char*             prompt;                         /* 命令提示符 */
 #if LETK_CLI_HISTORY_ENABLE
     /* 备份字符串，用于翻历史记录时保存当前 */
     char                    backup_str[LETK_CLI_LINE_CHAR_MAX];
@@ -99,24 +61,11 @@ static letk_cli_mgr_t letk_cli_mgr;
 /* 读取下一个命令 */
 static const letk_cli_cmd_t* letk_cli_get_next_cmd(const int* const addr)
 {
-#if (LETK_CLI_CC == LETK_CLI_CC_VS)
-    const int *ptr = addr;
-    ptr += sizeof(letk_cli_cmd_t) / sizeof(const int);
-    while (ptr < letk_cli_mgr.p_cmd_end)
-    {
-        if ((*ptr) != 0)
-        {
-            return (const letk_cli_cmd_t*)ptr;
-        }
-        ptr++;
-    }
-#else   /* LETK_CLI_CC == LETK_CLI_CC_VS */
     const int *ptr = (const int*)((char*)addr + sizeof(letk_cli_cmd_t));
     if (ptr < letk_cli_mgr.p_cmd_end)
     {
         return (const letk_cli_cmd_t*)ptr;
     }
-#endif  /* LETK_CLI_CC == LETK_CLI_CC_VS */
 
     return NULL;
 }
@@ -150,53 +99,20 @@ void letk_cli_mgr_init(void)
     extern const int letk_cli_cmd_section$$Limit;
     letk_cli_mgr.p_cmd_start = (const int*)&letk_cli_cmd_section$$Base;
     letk_cli_mgr.p_cmd_end   = (const int*)&letk_cli_cmd_section$$Limit;
-#elif  (LETK_CLI_CC == LETK_CLI_CC_GCC_LINUX)
-    extern const letk_cli_cmd_t letk_cli_cmd_section_start;
-    extern const letk_cli_cmd_t letk_cli_cmd_section_end;
-    letk_cli_mgr.p_cmd_start = (const int*)&letk_cli_cmd_section_start;
-    letk_cli_mgr.p_cmd_end   = (const int*)&letk_cli_cmd_section_end;
 #elif ((LETK_CLI_CC == LETK_CLI_CC_IAR_ARM) || (LETK_CLI_CC == LETK_CLI_CC_IAR_STM8))
-    letk_cli_mgr.p_cmd_start = (const int*)__section_begin(".letk_cli_cmd_section");
-    letk_cli_mgr.p_cmd_end = (const int*)__section_end(".letk_cli_cmd_section");
-#elif (LETK_CLI_CC == LETK_CLI_CC_VS) || (LETK_CLI_CC == LETK_CLI_CC_MINGW)
-    unsigned int* ptr_begin, *ptr_end;
-
-    /* 找寻起始位置 */
-    ptr_begin = (unsigned int*)&__letk_cli_cmd_begin;
-    ptr_begin += (sizeof(letk_cli_cmd_t) / sizeof(unsigned int));
-    while ((*ptr_begin) == 0) ptr_begin++;
-
-    /* 找寻终止位置 */
-    ptr_end = (unsigned int *)&__letk_cli_cmd_end;
-    ptr_end--;
-    while ((*ptr_end) == 0) ptr_end--;
-
-    /* 判断是否合法 */
-    if (ptr_begin < ptr_end)
-    {
-        letk_cli_mgr.p_cmd_start = (const int*)(ptr_begin);
-        letk_cli_mgr.p_cmd_end   = (const int*)(ptr_end);
-    }
-    else
-    {
-        letk_cli_mgr.p_cmd_start = NULL;
-        letk_cli_mgr.p_cmd_end   = NULL;
-    }
-#elif (LETK_CLI_CC == LETK_CLI_CC_ANY)
+    letk_cli_mgr.p_cmd_start = (const int*)__section_begin("letk_cli_cmd_section");
+    letk_cli_mgr.p_cmd_end = (const int*)__section_end("letk_cli_cmd_section");
     letk_cli_mgr.p_cmd_start = (const int*)&letk_cli_static_cmds[0];
     const letk_cli_cmd_t *ptr = &letk_cli_static_cmds[0];
     while (ptr->name != NULL) ptr++;
     letk_cli_mgr.p_cmd_end = (const int*)ptr;
-#else
-    letk_cli_mgr.p_cmd_start = NULL;
-    letk_cli_mgr.p_cmd_end = NULL;
 #endif
 
     letk_cli_mgr.input_count = 0;
     letk_cli_mgr.input_cusor = 0;
     letk_cli_mgr.input_status = LETK_CLI_INPUT_WAIT_NORMAL;
     letk_cli_mgr.pf_outchar = NULL;
-    letk_cli_mgr.p_cmd_notice = LETK_CLI_DEFAULT_CMD_PROMPT;
+    letk_cli_mgr.prompt = LETK_CLI_DEFAULT_CMD_PROMPT;
 
     memset(letk_cli_mgr.line, 0, sizeof(letk_cli_mgr.line));
 #if LETK_CLI_HISTORY_ENABLE
@@ -215,15 +131,15 @@ void letk_cli_set_out_char_cb(letk_cli_out_char_cb_t *out_char_cb)
 }
 
 /* 设置命令提示符 */
-void letk_cli_set_cmd_prompt(const char* const p_notice)
+void letk_cli_set_prompt(const char* const prompt)
 {
-    if (p_notice != NULL)
+    if (prompt != NULL)
     {
-        letk_cli_mgr.p_cmd_notice = p_notice;
+        letk_cli_mgr.prompt = prompt;
     }
     else
     {
-        letk_cli_mgr.p_cmd_notice = LETK_CLI_DEFAULT_CMD_PROMPT;
+        letk_cli_mgr.prompt = LETK_CLI_DEFAULT_CMD_PROMPT;
     }
 }
 
@@ -231,7 +147,7 @@ void letk_cli_set_cmd_prompt(const char* const p_notice)
 void letk_cli_start(void)
 {
     letk_cli_put_str("\r\n");
-    letk_cli_put_str(letk_cli_mgr.p_cmd_notice);
+    letk_cli_put_str(letk_cli_mgr.prompt);
 }
 
 /* 打印字符 */
@@ -244,25 +160,27 @@ void letk_cli_put_char(const char ch)
 }
 
 /* 打印整数 */
-void letk_cli_put_int(int num)
+void letk_cli_put_int(const int num)
 {
-    char num_mod_table[10], i = 0;
+    char buf[10];
+    int i = 0;
+    int temp = num;
 
-    if (num < 0)
+    if (temp < 0)
     {
         letk_cli_put_char('-');
-        num = -num;
+        temp = -temp;
     }
 
     do
     {
-        num_mod_table[i++] = num % 10;
-        num /= 10;
-    } while (num);
+        buf[i++] = (temp % 10) + '0';
+        temp /= 10;
+    } while (temp);
 
     while (i)
     {
-        letk_cli_put_char(num_mod_table[--i] + '0');
+        letk_cli_put_char(buf[--i]);
     }
 }
 
@@ -456,44 +374,6 @@ static int letk_cli_parse_func_key(const char ch)
         }
     }
 
-#if (LETK_CLI_CC == LETK_CLI_CC_VS) || (LETK_CLI_CC == LETK_CLI_CC_MINGW) || \
-    ((LETK_CLI_CC == LETK_CLI_CC_ANY) && defined _MSC_VER)
-    /* windows命令行功能码 */
-    if (ch == (char)0xE0)
-    {
-        letk_cli_mgr.input_status = LETK_CLI_INPUT_WAIT_FUNC_KEY1;
-        return 0;
-    }
-    else if (letk_cli_mgr.input_status == LETK_CLI_INPUT_WAIT_FUNC_KEY1)
-    {
-        letk_cli_mgr.input_status = LETK_CLI_INPUT_WAIT_NORMAL;
-        if (ch == (char)0x48)         /* 上 */
-        {
-#if LETK_CLI_HISTORY_ENABLE
-            letk_cli_parse_up_key();
-#endif  /* LETK_CLI_HISTORY_ENABLE */
-            return 0;
-        }
-        else if (ch == (char)0x50)    /* 下 */
-        {
-#if LETK_CLI_HISTORY_ENABLE
-            letk_cli_parse_down_key();
-#endif  /* LETK_CLI_HISTORY_ENABLE */
-            return 0;
-        }
-        else if (ch == (char)0x4B)    /* 左 */
-        {
-            letk_cli_parse_left_key();
-            return 0;
-        }
-        else if (ch == (char)0x4D)    /* 右 */
-        {
-            letk_cli_parse_right_key();
-            return 0;
-        }
-    }
-#endif  /* _MSC_VER */
-
     return -1;
 }
 
@@ -615,7 +495,7 @@ static void letk_cli_parse_tab_key(void)
     else if (find_count > 1)
     {
         /* 显示提示符 */
-        letk_cli_put_str(letk_cli_mgr.p_cmd_notice);
+        letk_cli_put_str(letk_cli_mgr.prompt);
         /* 重新更新坐标 */
         letk_cli_mgr.input_count = (unsigned int)strlen(letk_cli_mgr.line);
         letk_cli_mgr.input_cusor = letk_cli_mgr.input_count;
@@ -755,7 +635,7 @@ static void letk_cli_parse_enter_key(void)
     }
 
     /* 清空行，为下一次输入准备 */
-    letk_cli_put_str(letk_cli_mgr.p_cmd_notice);
+    letk_cli_put_str(letk_cli_mgr.prompt);
     memset(letk_cli_mgr.line, 0, sizeof(letk_cli_mgr.line));
     letk_cli_mgr.input_cusor = letk_cli_mgr.input_count = 0;
 }
@@ -836,13 +716,13 @@ void letk_cli_parse_char(const char ch)
     }
 }
 
-#if LETK_CLI_CMD_REG_BY_CC_SECTION
+#if LETK_CLI_CC
 /* 编译器命令导出方式可以防耦合，将函数声明为局部函数 */
 #define CMD_CB_CALL_PREFIX  static
-#else
+#else   /* LETK_CLI_CC */
 /* 静态注册方式需要导出默认命令函数，不能加static */
 #define CMD_CB_CALL_PREFIX
-#endif  /* LETK_CLI_CMD_REG_BY_CC_SECTION */
+#endif  /* LETK_CLI_CC */
 
 /* 内部命令-help */
 CMD_CB_CALL_PREFIX int letk_cli_internal_cmd_help(int argc, char* argv[])

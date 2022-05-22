@@ -4,14 +4,13 @@
 ** 编写作者：Tom Free 付瑞彪
 ** 编写时间：2021-03-18
 ** 文件备注：
-**
 ** 更新记录：
 **           2021-03-18 -> 创建文件
 **                                                             <Tom Free 付瑞彪>
 **           2021-06-17 -> 增加自动命令注册和静态注册选项
 **                                                             <Tom Free 付瑞彪>
 **
-**              Copyright (c) 2018-2021 付瑞彪 All Rights Reserved
+**              Copyright (c) 2018-2022 付瑞彪 All Rights Reserved
 **
 **       1 Tab == 4 Spaces     UTF-8     ANSI C Language(C99)
 *******************************************************************************/
@@ -19,7 +18,7 @@
 #define __LETK_CLI_CFG_H__
 
 /* 是否使能命令行接口 */
-#define LETK_CLI_ENABLE                 1u
+#define LETK_CLI_ENABLE                 0u
 
 /* 是否通过编译器段自动注册命令
  * 1、如果编译器是系统已配置可以使用的编译器就可以配置此处为1，然后可以使用
@@ -42,6 +41,6 @@
 #define LETK_CLI_HISTORY_LINE_MAX       10u
 
 /* 默认命令提示符 */
-#define LETK_CLI_DEFAULT_CMD_PROMPT     "[CLI] > "
+#define LETK_CLI_DEFAULT_CMD_PROMPT     "[LETX] > "
 
 #endif  /* __LETK_CLI_CFG_H__ */
