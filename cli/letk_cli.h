@@ -133,6 +133,16 @@ void letk_cli_put_int(const int num);
 void letk_cli_put_str(const char* const str);
 
 /**
+ * @brief 清除当前行的显示内容
+ */
+void letk_cli_clear_line(void);
+
+/**
+ * @brief 重新显示当前行的内容
+ */
+void letk_cli_put_line(void);
+
+/**
  * @brief 解析一个字符
  * @param[in] ch 待解析字符
  */

@@ -15,10 +15,8 @@
 #ifndef __LETK_LOG_CFG_H__
 #define __LETK_LOG_CFG_H__
 
-/* 是否使能日志模块 */
-#define LETK_LOG_ENABLE         1
-/* 日志输出等级，只有大于这个等级的日志才会输出 */
-#define LETK_LOG_LEVEL          LETK_LOG_LEVEL_ALL
+/* 日志输出等级，只有不小于这个等级的日志才会输出 */
+#define LETK_LOG_LEVEL          LETK_LOG_LEVEL_DEBUG
 /* 日志输出buf大小，单位：字节 */
 #define LETK_LOG_BUF_SIZE       256
 /* 是否使用printf函数来打印日志，否则需要用户自己实现打印接口 */

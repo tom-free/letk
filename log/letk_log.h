@@ -16,30 +16,26 @@
 #define __LETK_LOG_H__
 
 #include "letk_log_cfg.h"
-#include <stdint.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif  /* __cplusplus */
 
 /* 日志等级 */
-#define LETK_LOG_LEVEL_ALL      0   /* 输出全部日志 */
 #define LETK_LOG_LEVEL_DEBUG    0   /* 调试信息 */
 #define LETK_LOG_LEVEL_INFO     1   /* 关键信息 */
 #define LETK_LOG_LEVEL_WARNING  2   /* 警告信息 */
 #define LETK_LOG_LEVEL_ERROR    3   /* 错误信息 */
-#define LETK_LOG_LEVEL_USER     4   /* 用户日志信息 */
-#define LETK_LOG_LEVEL_NONE     5   /* 不输出任何日志 */
-
-#ifndef LETK_LOG_ENABLE
-#define LETK_LOG_ENABLE         0
-#endif  /* LETK_LOG_ENABLE */
+#define LETK_LOG_LEVEL_NONE     4   /* 不打印任何日志 */
+#define LETK_LOG_LEVEL_NUM      4   /* 日志等级数量 */
 
 #ifndef LETK_LOG_LEVEL
 #define LETK_LOG_LEVEL          LETK_LOG_LEVEL_NONE
 #endif  /* LETK_LOG_LEVEL */
 
-#if LETK_LOG_ENABLE && LETK_LOG_LEVEL < LETK_LOG_LEVEL_NONE
+#if LETK_LOG_LEVEL < LETK_LOG_LEVEL_NONE
+
+#include <stdint.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif  /* __cplusplus */
 
 /* 日志等级数据类型 */
 typedef int8_t letk_log_level_t;
@@ -53,18 +49,25 @@ typedef int8_t letk_log_level_t;
 #endif  /* LETK_LOG_USE_PRINTF */
 
 #if !LETK_LOG_USE_PRINTF
-/**
- * 日志打印回调函数
- * 输入参数依次为：日志等级、当前代码文件路径、当前代码行号、当前函数名称、日志描述
- */
-typedef void letk_log_print_cb_t(letk_log_level_t level, const char* file, const uint32_t line, const char* func, const char* str);
+/* 日志字符串输出回调函数 */
+typedef void letk_log_puts_cb_t(const char* str);
+/* 日志输出钩子回调函数，提供钩子，用户可以实现高级功能，例如命令行的再现 */
+typedef void letk_log_hook_cb_t(void);
 
 /**
- * @brief 注册日志打印回调函数
- * @param[in] print_cb 打印日志回调函数指针
+ * @brief 日志系统初始化
+ * @param[in] puts_cb 字符串输出回调函数
+ * @param[in] end_cb 输出结束回调函数，不用可以置为NULL
  */
-void letk_log_register_print_cb(letk_log_print_cb_t *print_cb);
+void letk_log_init(letk_log_puts_cb_t* puts_cb);
 #endif  /* !LETK_LOG_USE_PRINTF */
+
+/**
+ * @brief 设置日志系统钩子回调函数
+ * @param[in] start_cb 开始日志输出时的钩子回调函数，不用可以置为NULL
+ * @param[in] end_cb 结束日志输出时的钩子回调函数，不用可以置为NULL
+ */
+void letk_log_set_hook_cb(letk_log_hook_cb_t* start_cb, letk_log_hook_cb_t* end_cb);
 
 /**
  * @brief 输出一条日志，此函数内部宏使用，用户不要直接使用
@@ -75,52 +78,37 @@ void letk_log_register_print_cb(letk_log_print_cb_t *print_cb);
  * @param[in] fmt 格式化字符串
  * @param[in] ... 可变参数，fmt中的格式排列
  */
-void _letk_log_output(letk_log_level_t level, const char* file, int line, const char* func, const char* fmt, ...);
-
-/* 日志输出宏 */
-#if LETK_LOG_LEVEL <= LETK_LOG_LEVEL_DEBUG
-#define LETK_LOG_DEBUG(...)     _letk_log_output(LETK_LOG_LEVEL_DEBUG, __FILE__, __LINE__, __func__, __VA_ARGS__);
-#else
-#define LETK_LOG_DEBUG(...)
-#endif
-
-#if LETK_LOG_LEVEL <= LETK_LOG_LEVEL_INFO
-#define LETK_LOG_INFO(...)      _letk_log_output(LETK_LOG_LEVEL_INFO, __FILE__, __LINE__, __func__, __VA_ARGS__);
-#else
-#define LETK_LOG_INFO(...)
-#endif
-
-#if LETK_LOG_LEVEL <= LETK_LOG_LEVEL_WARNING
-#define LETK_LOG_WARNING(...)   _letk_log_output(LETK_LOG_LEVEL_WARNING, __FILE__, __LINE__, __func__, __VA_ARGS__);
-#else
-#define LETK_LOG_WARNING(...)
-#endif
-
-#if LETK_LOG_LEVEL <= LETK_LOG_LEVEL_ERROR
-#define LETK_LOG_ERROR(...)     _letk_log_output(LETK_LOG_LEVEL_ERROR, __FILE__, __LINE__, __func__, __VA_ARGS__);
-#else
-#define LETK_LOG_ERROR(...)
-#endif
-
-#if LETK_LOG_LEVEL <= LETK_LOG_LEVEL_USER
-#define LETK_LOG_USER(...)      _letk_log_output(LETK_LOG_LEVEL_USER, __FILE__, __LINE__, __func__, __VA_ARGS__);
-#else
-#define LETK_LOG_USER(...)
-#endif
-
-#else   /* LETK_LOG_ENABLE && LETK_LOG_LEVEL < LETK_LOG_LEVEL_NONE */
-
-/* 啥都不做 */
-#define LETK_LOG_DEBUG(...)
-#define LETK_LOG_INFO(...)
-#define LETK_LOG_WARNING(...)
-#define LETK_LOG_ERROR(...)
-#define LETK_LOG_USER(...)
-
-#endif  /* LETK_LOG_ENABLE && LETK_LOG_LEVEL < LETK_LOG_LEVEL_NONE */
+void letk_log_output(letk_log_level_t level, const char* file, int line, const char* func, const char* fmt, ...);
 
 #ifdef __cplusplus
 }   /* extern "C" */
 #endif  /* __cplusplus */
+
+#endif  /* LETK_LOG_LEVEL < LETK_LOG_LEVEL_NONE */
+
+/* 日志输出宏 */
+#if LETK_LOG_LEVEL <= LETK_LOG_LEVEL_DEBUG
+#define LETK_LOG_DEBUG(...)     letk_log_output(LETK_LOG_LEVEL_DEBUG, __FILE__, __LINE__, __func__, __VA_ARGS__);
+#else
+#define LETK_LOG_DEBUG(...)     (void)(0)
+#endif
+
+#if LETK_LOG_LEVEL <= LETK_LOG_LEVEL_INFO
+#define LETK_LOG_INFO(...)      letk_log_output(LETK_LOG_LEVEL_INFO, __FILE__, __LINE__, __func__, __VA_ARGS__);
+#else
+#define LETK_LOG_INFO(...)      (void)(0)
+#endif
+
+#if LETK_LOG_LEVEL <= LETK_LOG_LEVEL_WARNING
+#define LETK_LOG_WARNING(...)   letk_log_output(LETK_LOG_LEVEL_WARNING, __FILE__, __LINE__, __func__, __VA_ARGS__);
+#else
+#define LETK_LOG_WARNING(...)   (void)(0)
+#endif
+
+#if LETK_LOG_LEVEL <= LETK_LOG_LEVEL_ERROR
+#define LETK_LOG_ERROR(...)     letk_log_output(LETK_LOG_LEVEL_ERROR, __FILE__, __LINE__, __func__, __VA_ARGS__);
+#else
+#define LETK_LOG_ERROR(...)     (void)(0)
+#endif
 
 #endif  /* __LETK_LOG_H__ */

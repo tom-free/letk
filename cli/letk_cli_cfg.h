@@ -18,7 +18,7 @@
 #define __LETK_CLI_CFG_H__
 
 /* 是否使能命令行接口 */
-#define LETK_CLI_ENABLE                 0u
+#define LETK_CLI_ENABLE                 1u
 
 /* 是否通过编译器段自动注册命令
  * 1、如果编译器是系统已配置可以使用的编译器就可以配置此处为1，然后可以使用

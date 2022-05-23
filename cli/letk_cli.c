@@ -202,6 +202,41 @@ void letk_cli_put_str(const char* const str)
     }
 }
 
+/**
+ * @brief 清除当前行的显示内容
+ */
+void letk_cli_clear_line(void)
+{
+    unsigned int length = letk_cli_mgr.input_cusor + strlen(letk_cli_mgr.prompt);
+
+    while (length--)
+    {
+        letk_cli_put_str("\b \b");
+    }
+}
+
+/**
+ * @brief 重新显示当前行的内容
+ */
+void letk_cli_put_line(void)
+{
+    unsigned int length;
+
+    letk_cli_put_str(letk_cli_mgr.prompt);
+    if (letk_cli_mgr.input_count)
+    {
+        letk_cli_put_str(letk_cli_mgr.line);
+    }
+    if (letk_cli_mgr.input_cusor < letk_cli_mgr.input_count)
+    {
+        length = letk_cli_mgr.input_count - letk_cli_mgr.input_cusor;
+        while (length--)
+        {
+            letk_cli_put_char('\b');
+        }
+    }
+}
+
 #if LETK_CLI_HISTORY_ENABLE
 /* 上键处理 */
 static void letk_cli_parse_up_key(void)
