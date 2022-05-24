@@ -36,9 +36,8 @@ bool letk_rbuffer_init(letk_rbuffer_t* rb, uint8_t* buf, letk_rbuffer_size_t len
 }
 
 /**
- * @brief   清空环形缓冲区 
- * @param   rb - 待清空的环形缓冲区管理器(必须非NULL，否则挂批)
- * @return  无
+ * @brief 清除环形缓冲区
+ * @param[in] rb 缓冲区实例指针(必须非NULL)
  */
 void letk_rbuffer_clear(letk_rbuffer_t* rb)
 {
@@ -46,9 +45,9 @@ void letk_rbuffer_clear(letk_rbuffer_t* rb)
 }
 
 /**
- * @brief   获取环形缓冲区数据长度
- * @param   rb - 环形缓冲区管理器(必须非NULL，否则挂批)
- * @return  环形缓冲区中有效字节数
+ * @brief 获取环形缓冲区当前的数据长度
+ * @param[in] rb 缓冲区实例指针(必须非NULL)
+ * @return 当前的数据长度
  */
 letk_rbuffer_size_t letk_rbuffer_length(letk_rbuffer_t* rb)
 {
@@ -56,10 +55,10 @@ letk_rbuffer_size_t letk_rbuffer_length(letk_rbuffer_t* rb)
 }
 
 /**
- * @brief   将一个字节数据放到环形缓冲区中
- * @param   rb - 环形缓冲区管理器(必须非NULL，否则挂批)
- * @param   dat - 待写入的一个字节数据
- * @return  是否写入成功
+ * @brief 写入一字节到环形缓冲区
+ * @param[in] rb 缓冲区实例指针(必须非NULL)
+ * @param[in] dat 数据字节
+ * @return 是否写入成功
  */
 bool letk_rbuffer_write_byte(letk_rbuffer_t* rb, uint8_t dat)
 {
@@ -78,10 +77,10 @@ bool letk_rbuffer_write_byte(letk_rbuffer_t* rb, uint8_t dat)
 }
 
 /**
- * @brief   从环形缓冲区中读取一个字节数据
- * @param   rb - 环形缓冲区管理器(必须非NULL，否则挂批)
- * @param   pdat - 待读取的一个字节数据存储地址(必须非NULL，否则挂批)
- * @return  是否读取成功
+ * @brief 从环形缓冲区读取一字节
+ * @param[in] rb 缓冲区实例指针(必须非NULL)
+ * @param[out] pdat 数据字节指针(必须非NULL)
+ * @return 是否读取成功
  */
 bool letk_rbuffer_read_byte(letk_rbuffer_t* rb, uint8_t* pdat)
 {
@@ -100,13 +99,13 @@ bool letk_rbuffer_read_byte(letk_rbuffer_t* rb, uint8_t* pdat)
 }
 
 /**
- * @brief   将指定长度的数据放到环形缓冲区中
- * @param   rb - 环形缓冲区管理器(必须非NULL，否则挂批)
- * @param   buf - 数据缓冲区(必须非NULL，否则挂批)
- * @param   length - 缓冲区长度
- * @return  实际写入的数据长度
+ * @brief 写入多个字节到环形缓冲区
+ * @param[in] rb 缓冲区实例指针(必须非NULL)
+ * @param[in] buf 数据存储(必须非NULL)
+ * @param[in] length 数据存储长度
+ * @return 写入成功的字节数
  */
-letk_rbuffer_size_t letk_rbuffer_write_bytes(letk_rbuffer_t* rb, uint8_t* buf, letk_rbuffer_size_t length)
+letk_rbuffer_size_t letk_rbuffer_write_bytes(letk_rbuffer_t* rb, const uint8_t* buf, letk_rbuffer_size_t length)
 {
     letk_rbuffer_size_t i;
     letk_rbuffer_size_t left;
@@ -120,11 +119,11 @@ letk_rbuffer_size_t letk_rbuffer_write_bytes(letk_rbuffer_t* rb, uint8_t* buf, l
 }
 
 /**
- * @brief   从环形缓冲区中读取指定长度的数据
- * @param   rb - 环形缓冲区管理器(必须非NULL，否则挂批)
- * @param   buf - 数据缓冲区(必须非NULL，否则挂批)
- * @param   length - 缓冲区长度
- * @return  实际读取的数据长度
+ * @brief 从环形缓冲区读取多个字节
+ * @param[in] rb 缓冲区实例指针(必须非NULL)
+ * @param[out] buf 数据存储(必须非NULL)
+ * @param[in] length 需要读取的字节数
+ * @return 实际读取的字节数
  */
 letk_rbuffer_size_t letk_rbuffer_read_bytes(letk_rbuffer_t* rb, uint8_t* buf, letk_rbuffer_size_t length)
 {

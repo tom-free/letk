@@ -680,7 +680,7 @@ static void letk_cli_parse_common_char(const char ch)
 {
     int i, count;
 
-    if (letk_cli_mgr.input_count > (LETK_CLI_LINE_CHAR_MAX - 1))
+    if (letk_cli_mgr.input_count >= (LETK_CLI_LINE_CHAR_MAX))
     {
         return;
     }
