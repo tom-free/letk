@@ -21,18 +21,44 @@ extern "C" {
 #define LETK_RBUFFER_GET_MIN(a, b) ((a) < (b)) ? (a) : (b)
 
 /**
+ * @brief 向下裁剪到2的N次幂
+ * @param[in] x 数值
+ * @return 向下裁剪到2的N次幂后的值
+ * @example 输入17，输出16，输入4，输出4
+ */
+static uint32_t letk_rbuffer_trim_to_2_pow_n(uint32_t x)
+{
+    x |= x >> 1;
+    x |= x >> 2;
+    x |= x >> 4;
+    x |= x >> 8;
+    x |= x >> 16;
+    return (x + 1) >> 1;
+}
+
+/**
  * @brief 初始化一个环形缓冲区
  * @param[in] rb 环形缓冲区管理器指针(必须非NULL）
- * @param[in] buf 数据缓冲区(必须非NULL，否则会初始化失败)
- * @param[in] length buf长度(必须是2的N次幂，否则会初始化失败)
- * @return 是否初始化成功
+ * @param[in] buf 数据缓冲区(必须非NULL)
+ * @param[in] length buf长度(会向下裁剪到2的N次幂)
  */
-bool letk_rbuffer_init(letk_rbuffer_t* rb, uint8_t* buf, letk_rbuffer_size_t length)
+void letk_rbuffer_init(letk_rbuffer_t* rb, uint8_t* buf, uint32_t length)
 {
+    if (rb == NULL)
+    {
+        return;
+    }
+
+    if (buf == NULL)
+    {
+        rb->size = 0;
+        rb->front = rb->rear = 0;
+        return;
+    }
+
     rb->buf = buf;
-    rb->size = length;
+    rb->size = letk_rbuffer_trim_to_2_pow_n(length);
     rb->front = rb->rear = 0;
-    return ((buf != NULL) && ((length & (length - 1)) == 0));
 }
 
 /**
@@ -49,9 +75,9 @@ void letk_rbuffer_clear(letk_rbuffer_t* rb)
  * @param[in] rb 缓冲区实例指针(必须非NULL)
  * @return 当前的数据长度
  */
-letk_rbuffer_size_t letk_rbuffer_length(letk_rbuffer_t* rb)
+uint32_t letk_rbuffer_length(letk_rbuffer_t* rb)
 {
-    return (letk_rbuffer_size_t)(rb->rear - rb->front);
+    return (uint32_t)(rb->rear - rb->front);
 }
 
 /**
@@ -62,7 +88,7 @@ letk_rbuffer_size_t letk_rbuffer_length(letk_rbuffer_t* rb)
  */
 bool letk_rbuffer_write_byte(letk_rbuffer_t* rb, uint8_t dat)
 {
-    letk_rbuffer_size_t left;
+    uint32_t left;
     left = rb->size + rb->front - rb->rear;
     if (left)
     {
@@ -84,7 +110,7 @@ bool letk_rbuffer_write_byte(letk_rbuffer_t* rb, uint8_t dat)
  */
 bool letk_rbuffer_read_byte(letk_rbuffer_t* rb, uint8_t* pdat)
 {
-    letk_rbuffer_size_t left;
+    uint32_t left;
     left = rb->rear - rb->front;
     if (left)
     {
@@ -105,10 +131,10 @@ bool letk_rbuffer_read_byte(letk_rbuffer_t* rb, uint8_t* pdat)
  * @param[in] length 数据存储长度
  * @return 写入成功的字节数
  */
-letk_rbuffer_size_t letk_rbuffer_write_bytes(letk_rbuffer_t* rb, const uint8_t* buf, letk_rbuffer_size_t length)
+uint32_t letk_rbuffer_write_bytes(letk_rbuffer_t* rb, const uint8_t* buf, uint32_t length)
 {
-    letk_rbuffer_size_t i;
-    letk_rbuffer_size_t left;
+    uint32_t i;
+    uint32_t left;
     left = rb->size + rb->front - rb->rear;
     length = LETK_RBUFFER_GET_MIN(length, left);
     i = LETK_RBUFFER_GET_MIN(length, rb->size - (rb->rear & (rb->size - 1)));
@@ -125,10 +151,10 @@ letk_rbuffer_size_t letk_rbuffer_write_bytes(letk_rbuffer_t* rb, const uint8_t* 
  * @param[in] length 需要读取的字节数
  * @return 实际读取的字节数
  */
-letk_rbuffer_size_t letk_rbuffer_read_bytes(letk_rbuffer_t* rb, uint8_t* buf, letk_rbuffer_size_t length)
+uint32_t letk_rbuffer_read_bytes(letk_rbuffer_t* rb, uint8_t* buf, uint32_t length)
 {
-    letk_rbuffer_size_t i;
-    letk_rbuffer_size_t left;
+    uint32_t i;
+    uint32_t left;
     left = rb->rear - rb->front;
     length = LETK_RBUFFER_GET_MIN(length, left);
     i = LETK_RBUFFER_GET_MIN(length, rb->size - (rb->front & (rb->size - 1)));

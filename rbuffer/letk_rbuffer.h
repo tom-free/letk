@@ -18,25 +18,22 @@
 extern "C" {
 #endif  /* __cplusplus */
 
-/* 尺寸类型定义 */
-typedef uint32_t letk_rbuffer_size_t;
-
 /* 环形缓冲区管理器，用户不要去直接操作内部成员变量 */
 typedef struct
 {
-     uint8_t*            buf;       /* 环形缓冲区地址 */
-     letk_rbuffer_size_t size;      /* 环形缓冲区大小 */
-     letk_rbuffer_size_t front;     /* 头指针 */
-     letk_rbuffer_size_t rear;      /* 尾指针 */
+     uint8_t* buf;      /* 环形缓冲区地址 */
+     uint32_t size;     /* 环形缓冲区大小 */
+     uint32_t front;    /* 头指针 */
+     uint32_t rear;     /* 尾指针 */
 } letk_rbuffer_t;
 
 /**
- * @brief 初始化环形缓冲区
- * @param[in] rb 缓冲区实例指针(必须非NULL)
- * @param[in] buf 缓冲区存储区(必须非NULL)
- * @param[in] rb 缓冲区存储长度(必须是2的N次幂)
+ * @brief 初始化一个环形缓冲区
+ * @param[in] rb 环形缓冲区管理器指针(必须非NULL）
+ * @param[in] buf 数据缓冲区(必须非NULL)
+ * @param[in] length buf长度(会向下裁剪到2的N次幂)
  */
-bool letk_rbuffer_init(letk_rbuffer_t* rb, uint8_t* buf, letk_rbuffer_size_t length);
+void letk_rbuffer_init(letk_rbuffer_t* rb, uint8_t* buf, uint32_t length);
 
 /**
  * @brief 清除环形缓冲区
@@ -49,7 +46,7 @@ void letk_rbuffer_clear(letk_rbuffer_t* rb);
  * @param[in] rb 缓冲区实例指针(必须非NULL)
  * @return 当前的数据长度
  */
-letk_rbuffer_size_t letk_rbuffer_length(letk_rbuffer_t* rb);
+uint32_t letk_rbuffer_length(letk_rbuffer_t* rb);
 
 /**
  * @brief 写入一字节到环形缓冲区
@@ -74,7 +71,7 @@ bool letk_rbuffer_read_byte(letk_rbuffer_t* rb, uint8_t* pdat);
  * @param[in] length 数据存储长度
  * @return 写入成功的字节数
  */
-letk_rbuffer_size_t letk_rbuffer_write_bytes(letk_rbuffer_t* rb, const uint8_t* buf, letk_rbuffer_size_t length);
+uint32_t letk_rbuffer_write_bytes(letk_rbuffer_t* rb, const uint8_t* buf, uint32_t length);
 
 /**
  * @brief 从环形缓冲区读取多个字节
@@ -83,7 +80,7 @@ letk_rbuffer_size_t letk_rbuffer_write_bytes(letk_rbuffer_t* rb, const uint8_t* 
  * @param[in] length 需要读取的字节数
  * @return 实际读取的字节数
  */
-letk_rbuffer_size_t letk_rbuffer_read_bytes(letk_rbuffer_t* rb, uint8_t* buf, letk_rbuffer_size_t length);
+uint32_t letk_rbuffer_read_bytes(letk_rbuffer_t* rb, uint8_t* buf, uint32_t length);
 
 #ifdef __cplusplus
 }

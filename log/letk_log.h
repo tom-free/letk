@@ -1,14 +1,10 @@
 /*******************************************************************************
-** 文件名称：letk_log.h
-** 文件作用：日志模块头文件
-** 编写作者：Tom Free 付瑞彪
-** 编写时间：2022-05-03
-** 文件备注：
-** 更新记录：
-**           2022-05-03 -> 创建文件
-**                                                            <Tom Free 付瑞彪>
+** @file   letk_log.h
+** @brief  日志模块
+** @author 付瑞彪
+** @date   2022-05-29
 **
-**           Copyright (c) 2018-2022 付瑞彪 All Rights Reserved
+**       Copyright (c) 付瑞彪 All Rights Reserved
 **
 **       1 Tab == 4 Spaces     UTF-8     ANSI C Language(C99)
 *******************************************************************************/
@@ -109,6 +105,19 @@ void letk_log_output(letk_log_level_t level, const char* file, int line, const c
 #define LETK_LOG_ERROR(...)     letk_log_output(LETK_LOG_LEVEL_ERROR, __FILE__, __LINE__, __func__, __VA_ARGS__);
 #else
 #define LETK_LOG_ERROR(...)     (void)(0)
+#endif
+
+#if LETK_LOG_ASSERT_ENABLE
+#define LETK_LOG_ASSERT(expr)   do                  \
+                                {                   \
+                                    if (!(expr))    \
+                                    {               \
+                                        letk_log_output(LETK_LOG_LEVEL_ERROR, __FILE__, __LINE__, __func__, #expr);\
+                                        for (;;);   \
+                                    }               \
+                                } while (0)
+#else
+#define LETK_LOG_ASSERT(expr)   (void)(0)
 #endif
 
 #endif  /* __LETK_LOG_H__ */

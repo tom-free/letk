@@ -48,52 +48,41 @@ extern "C" {
 #define LETK_IBUTTON_CLICK_COUNT_MAX    UINT8_MAX
 #endif  /* LETK_IBUTTON_CLICK_COUNT_MAX */
 
-/* 按键管理器 */
-typedef struct
-{
-    /* 按键链表头节点 */
-    letk_ibutton_t *p_list_head;
-    /* 链表长度，仅用于统计节点个数 */
-    uint16_t        list_length;
-} letk_ibutton_mgr_t;
+/* 按键链表头节点 */
+static letk_ibutton_t* p_ibutton_head = NULL;
 
-/* 执行事件回调 */
-#define LETK_IBUTTON_EVENT_PROC(pbtn)           \
-    do                                          \
-    {                                           \
-        if (pbtn->event_cb != NULL)             \
-        {                                       \
-            pbtn->event_cb(pbtn);               \
-        }                                       \
-    } while (0)
-
-/* 管理器参数 */
-static letk_ibutton_mgr_t ibutton_mgr;
-
-/* 按键管理器初始化 */
+/**
+ * @brief 按键管理器参数初始化
+ * @note 用于休眠时内存断电的场合，唤醒后需要调用此函数重新初始化内存数据
+ *       此函数必须在按键设置相关的函数之前调用，不能在之后或中间调用
+ */
 void letk_ibutton_mgr_init(void)
 {
-    /* 初始化头指针为空 */
-    ibutton_mgr.p_list_head = NULL;
-    /* 初始化长度为0 */
-    ibutton_mgr.list_length = 0;
+    /* 头指针为空 */
+    p_ibutton_head = NULL;
 }
 
-/* 按键对象初始化 */
-letk_ibutton_result_t letk_ibutton_init(letk_ibutton_t* pbtn,
-                                        letk_ibutton_read_io_cb_t* read_io_cb,
-                                        letk_ibutton_event_cb_t* event_cb)
+/**
+ * @brief 按键对象初始化
+ * @param[in] pbtn 按键对象指针(不能为NULL)
+ * @param[in] read_cb 读取IO电平回调函数(不能为NULL)
+ * @param[in] event_cb 事件处理回调函数
+ * @note 在此函数调用之前需要初始化此按键相关的IO外设
+ *       此函数会读取一次电平存放起来，作为初始电平
+ *       按键参数使用配置文件里的默认值，需要修改请在此函数后调用相关函数设置
+ */
+void letk_ibutton_init(letk_ibutton_t* pbtn,
+                       letk_ibutton_read_cb_t* read_cb,
+                       letk_ibutton_event_cb_t* event_cb)
 {
-    if ((pbtn == NULL) ||
-        (read_io_cb == NULL) ||
-        (event_cb == NULL))
+    if ((pbtn == NULL) || (read_cb == NULL))
     {
-        return LETK_IBUTTON_RESULT_ARGS_ERR;
+        return;
     }
 
     /* 初始化参数 */
     pbtn->next = NULL;
-    pbtn->read_io_cb = read_io_cb;
+    pbtn->read_cb = read_cb;
     pbtn->event_cb = event_cb;
     pbtn->click_cnt_max = LETK_IBUTTON_CLICK_COUNT_MAX;
     pbtn->debounce_ticks = LETK_IBUTTON_DEBOUNCE_TICKS;
@@ -103,154 +92,165 @@ letk_ibutton_result_t letk_ibutton_init(letk_ibutton_t* pbtn,
     pbtn->internal_cnt = 0;
     pbtn->debounce_cnt = 0;
     pbtn->click_cnt = 0;
-    pbtn->fsm_status = LETK_IBUTTON_FSM_STATUS_RELEASE;
+    pbtn->status = LETK_IBUTTON_STATUS_RELEASED;
     pbtn->event = LETK_IBUTTON_EVENT_NONE;
 
-    /* 读取一次电平并保存 */
-    pbtn->level = pbtn->read_io_cb(pbtn);
-
-    return LETK_IBUTTON_RESULT_OK;
+    /* 读取一次IO状态并保存 */
+    pbtn->io_status = pbtn->read_cb(pbtn);
 }
 
-/* 设置读取IO回调 */
-letk_ibutton_result_t letk_ibutton_set_read_io_cb(letk_ibutton_t* pbtn,
-                                        letk_ibutton_read_io_cb_t* read_io_cb)
+/**
+ * @brief 设置读取IO回调函数
+ * @param[in] pbtn 按键对象指针(不能为NULL)
+ * @param[in] read_cb 读取IO回调函数(不能为NULL)
+ */
+void letk_ibutton_set_read_io_cb(letk_ibutton_t* pbtn,
+                                 letk_ibutton_read_cb_t* read_cb)
 {
-    if ((pbtn == NULL) ||
-        (read_io_cb == NULL))
+    if ((pbtn == NULL) || (read_cb == NULL))
     {
-        return LETK_IBUTTON_RESULT_ARGS_ERR;
+        return;
     }
 
-    pbtn->read_io_cb = read_io_cb;
-
-    return LETK_IBUTTON_RESULT_OK;
+    pbtn->read_cb = read_cb;
 }
 
-/* 设置事件处理回调 */
-letk_ibutton_result_t letk_ibutton_set_event_cb(letk_ibutton_t* pbtn,
-                                        letk_ibutton_event_cb_t* event_cb)
+/**
+ * @brief 设置事件处理回调函数
+ * @param[in] pbtn 按键对象指针(不能为NULL)
+ * @param[in] event_cb 事件处理回调函数
+ */
+void letk_ibutton_set_event_cb(letk_ibutton_t* pbtn,
+                               letk_ibutton_event_cb_t* event_cb)
 {
-    if ((pbtn == NULL) ||
-        (event_cb == NULL))
+    if (pbtn == NULL)
     {
-        return LETK_IBUTTON_RESULT_ARGS_ERR;
+        return;
     }
 
     pbtn->event_cb = event_cb;
-
-    return LETK_IBUTTON_RESULT_OK;
 }
 
-/* 设置连击最大次数 */
-letk_ibutton_result_t letk_ibutton_set_click_cnt_max(letk_ibutton_t* pbtn,
-                                        uint8_t click_cnt_max)
+/**
+ * @brief 设置连击最大次数
+ * @param[in] pbtn 按键对象指针(不能为NULL)
+ * @param[in] click_cnt_max 连击最大次数，范围[1-255]
+ */
+void letk_ibutton_set_click_cnt_max(letk_ibutton_t* pbtn,
+                                    uint8_t click_cnt_max)
 {
-    if ((pbtn == NULL) ||
-        (click_cnt_max == 0))
+    if ((pbtn == NULL) || (click_cnt_max == 0))
     {
-        return LETK_IBUTTON_RESULT_ARGS_ERR;
+        return;
     }
 
     pbtn->click_cnt_max = click_cnt_max;
-
-    return LETK_IBUTTON_RESULT_OK;
 }
 
-/* 设置防抖周期 */
-letk_ibutton_result_t letk_ibutton_set_debounce_ticks(letk_ibutton_t* pbtn,
-                                        uint8_t debounce_ticks)
+/**
+ * @brief 设置防抖检测次数
+ * @param[in] pbtn 按键对象指针(不能为NULL)
+ * @param[in] debounce_ticks 防抖检测次数，范围[1-255]
+ */
+void letk_ibutton_set_debounce_ticks(letk_ibutton_t* pbtn,
+                                     uint8_t debounce_ticks)
 {
-    if ((pbtn == NULL) ||
-        (debounce_ticks == 0))
+    if ((pbtn == NULL) || (debounce_ticks == 0))
     {
-        return LETK_IBUTTON_RESULT_ARGS_ERR;
+        return;
     }
 
     pbtn->debounce_ticks = debounce_ticks;
-
-    return LETK_IBUTTON_RESULT_OK;
 }
 
-/* 设置连击最大间隔时间周期 */
-letk_ibutton_result_t letk_ibutton_set_hit_again_ticks(letk_ibutton_t* pbtn,
-                                        uint8_t hit_again_ticks)
+/**
+ * @brief 设置连击最大间隔时间周期次数
+ * @param[in] pbtn 按键对象指针(不能为NULL)
+ * @param[in] hit_again_ticks - 连击最大间隔时间周期次数，范围[1-255]
+ */
+void letk_ibutton_set_hit_again_ticks(letk_ibutton_t* pbtn,
+                                      uint8_t hit_again_ticks)
 {
-    if ((pbtn == NULL) ||
-        (hit_again_ticks == 0))
+    if ((pbtn == NULL) || (hit_again_ticks == 0))
     {
-        return LETK_IBUTTON_RESULT_ARGS_ERR;
+        return;
     }
 
     pbtn->hit_again_ticks = hit_again_ticks;
-
-    return LETK_IBUTTON_RESULT_OK;
 }
 
-/* 设置长按触发时间周期 */
-letk_ibutton_result_t letk_ibutton_set_long_press_ticks(letk_ibutton_t* pbtn,
-                                        uint8_t long_press_ticks)
+/**
+ * @brief 设置长按触发时间周期次数
+ * @param[in] pbtn 按键对象指针(不能为NULL)
+ * @param[in] long_press_ticks - 长按触发时间周期次数，范围[1-255]
+ */
+void letk_ibutton_set_long_press_ticks(letk_ibutton_t* pbtn,
+                                       uint8_t long_press_ticks)
 {
-    if ((pbtn == NULL) ||
-        (long_press_ticks == 0))
+    if ((pbtn == NULL) || (long_press_ticks == 0))
     {
-        return LETK_IBUTTON_RESULT_ARGS_ERR;
+        return;
     }
 
     pbtn->long_press_ticks = long_press_ticks;
-
-    return LETK_IBUTTON_RESULT_OK;
 }
 
-/* 设置长按重复按下事件触发时间周期 */
-letk_ibutton_result_t letk_ibutton_set_long_repeat_ticks(letk_ibutton_t* pbtn,
+/**
+ * @brief 设置长按重复按下事件触发时间周期次数
+ * @param[in] pbtn 按键对象指针(不能为NULL)
+ * @param[in] long_repeat_ticks 长按重复按下事件触发时间周期次数，范围[1-255]
+ */
+void letk_ibutton_set_long_repeat_ticks(letk_ibutton_t* pbtn,
                                         uint8_t long_repeat_ticks)
 {
-    if ((pbtn == NULL) ||
-        (long_repeat_ticks == 0))
+    if ((pbtn == NULL) || (long_repeat_ticks == 0))
     {
-        return LETK_IBUTTON_RESULT_ARGS_ERR;
+        return;
     }
 
     pbtn->long_repeat_ticks = long_repeat_ticks;
-
-    return LETK_IBUTTON_RESULT_OK;
 }
 
-/* 添加按键对象到按键链表中 */
-letk_ibutton_result_t letk_ibutton_add(letk_ibutton_t* pbtn)
+/**
+ * @brief 添加按键对象到按键链表中
+ * @param[in] pbtn 按键对象指针(不能为NULL)
+ * @note 如果按键已在链表中不进行添加操作
+ *       不要在事件处理回调函数中使用
+ */
+void letk_ibutton_add(letk_ibutton_t* pbtn)
 {
     letk_ibutton_t* target;
 
     if (pbtn == NULL)
     {
-        /* 指针非法，返回参数错误 */
-        return LETK_IBUTTON_RESULT_ARGS_ERR;
+        /* 指针非法 */
+        return;
     }
 
     /* 搜寻是否已存在于链表中 */
-    target = ibutton_mgr.p_list_head;
+    target = p_ibutton_head;
     while (target != NULL)
     {
         if (target == pbtn)
         {
             /* 已存在 */
-            return LETK_IBUTTON_RESULT_EXIST;
+            return;
         }
         target = target->next;
     }
     /* 未搜索到，添加到头部 */
-    pbtn->next = ibutton_mgr.p_list_head;
+    pbtn->next = p_ibutton_head;
     /* 更新头节点 */
-    ibutton_mgr.p_list_head = pbtn;
-    /* 链表数量加1 */
-    ibutton_mgr.list_length++;
-
-    return LETK_IBUTTON_RESULT_OK;
+    p_ibutton_head = pbtn;
 }
 
-/* 从按键链表中移除按键对象 */
-letk_ibutton_result_t letk_ibutton_remove(letk_ibutton_t* pbtn)
+/**
+ * @brief 从按键链表中移除按键对象
+ * @param[in] pbtn 按键对象指针(不能为NULL)
+ * @note 如果按键未在链表中不进行删除操作
+ *       不要在事件处理回调函数中使用
+ */
+void letk_ibutton_remove(letk_ibutton_t* pbtn)
 {
     letk_ibutton_t* ptemp;
     letk_ibutton_t* prev;
@@ -258,29 +258,27 @@ letk_ibutton_result_t letk_ibutton_remove(letk_ibutton_t* pbtn)
     if (pbtn == NULL)
     {
         /* 指针非法 */
-        return LETK_IBUTTON_RESULT_ARGS_ERR;
+        return;
     }
 
-    if ((ibutton_mgr.list_length == 0) ||
-        (ibutton_mgr.p_list_head == NULL))
+    if (p_ibutton_head == NULL)
     {
         /* 链表空，未搜索到 */
-        return LETK_IBUTTON_RESULT_NOT_FOUND;
+        return;
     }
 
-    if (ibutton_mgr.p_list_head == pbtn)
+    if (p_ibutton_head == pbtn)
     {
         /* 如果需要删除的节点位于链表头，需要更新链表头指针 */
-        ibutton_mgr.p_list_head = ibutton_mgr.p_list_head->next;
+        p_ibutton_head = p_ibutton_head->next;
         /* 保证删除节点的指针安全 */
         pbtn->next = NULL;
-
-        return LETK_IBUTTON_RESULT_OK;
+        return;
     }
 
     /* 从第二个开始搜索 */
-    prev = ibutton_mgr.p_list_head;
-    ptemp = ibutton_mgr.p_list_head->next;
+    prev = p_ibutton_head;
+    ptemp = p_ibutton_head->next;
     for (; ptemp != NULL; ptemp = ptemp->next)
     {
         if (ptemp == pbtn)
@@ -289,28 +287,27 @@ letk_ibutton_result_t letk_ibutton_remove(letk_ibutton_t* pbtn)
             prev->next = ptemp->next;
             /* 保证删除节点的指针安全 */
             ptemp->next = NULL;
-
-            return LETK_IBUTTON_RESULT_OK;
+            return;
         }
         prev = ptemp;
     }
-
-    /* 未搜索到 */
-    return LETK_IBUTTON_RESULT_NOT_FOUND;
 }
 
-/* 轮询一个按键 */
+/**
+ * @brief 轮询一个按键
+ * @param[in] pbtn 按键对象指针(不能为NULL)
+ */
 static void letk_ibutton_poll_one_button(letk_ibutton_t* pbtn)
 {
     /* 读取电平 */
-    letk_ibutton_level_t btn_level = pbtn->read_io_cb(pbtn);
+    bool io_status = pbtn->read_cb(pbtn);
 
     /* 消抖 */
-    if (btn_level != pbtn->level)
+    if (io_status != pbtn->io_status)
     {
         if (++(pbtn->debounce_cnt) >= pbtn->debounce_ticks)
         {
-            pbtn->level = btn_level;
+            pbtn->io_status = io_status;
             pbtn->debounce_cnt = 0;
         }
     }
@@ -323,10 +320,10 @@ static void letk_ibutton_poll_one_button(letk_ibutton_t* pbtn)
     pbtn->event = LETK_IBUTTON_EVENT_NONE;
 
     /* 状态机 */
-    switch (pbtn->fsm_status)
+    switch (pbtn->status)
     {
-    case LETK_IBUTTON_FSM_STATUS_RELEASE:
-        if (pbtn->level == LETK_IBUTTON_LEVEL_PRESS)
+    case LETK_IBUTTON_STATUS_RELEASED:
+        if (pbtn->io_status)
         {
             /* 按键按下事件 */
             pbtn->event = LETK_IBUTTON_EVENT_PRESS;
@@ -335,31 +332,31 @@ static void letk_ibutton_poll_one_button(letk_ibutton_t* pbtn)
             /* 清除连击计数 */
             pbtn->click_cnt = 1;
             /* 切换到按键按下状态 */
-            pbtn->fsm_status = LETK_IBUTTON_FSM_STATUS_PRESS;
+            pbtn->status = LETK_IBUTTON_STATUS_PRESSED;
         }
         break;
 
-    case LETK_IBUTTON_FSM_STATUS_PRESS:
-        if (pbtn->level != LETK_IBUTTON_LEVEL_PRESS)
+    case LETK_IBUTTON_STATUS_PRESSED:
+        if (!pbtn->io_status)
         {
             /* 未达到长按时间之前抬起，按键松开事件 */
             pbtn->event = LETK_IBUTTON_EVENT_RELEASE;
             /* 清除计数器 */
             pbtn->internal_cnt = 0;
             /* 切换到等待连击状态 */
-            pbtn->fsm_status = LETK_IBUTTON_FSM_STATUS_WAIT_PRESS_AGIN;
+            pbtn->status = LETK_IBUTTON_STATUS_WAIT_PRESS_AGIN;
         }
-        else if (++(pbtn->internal_cnt) > pbtn->long_press_ticks)
+        else if (++pbtn->internal_cnt >= pbtn->long_press_ticks)
         {
             /* 超过长按时间还未松开，首次触发长按事件 */
             pbtn->event = LETK_IBUTTON_EVENT_LONG_FIRST;
             /* 切换到等待按键松开状态 */
-            pbtn->fsm_status = LETK_IBUTTON_FSM_STATUS_WAIT_RELEASE;
+            pbtn->status = LETK_IBUTTON_STATUS_WAIT_RELEASE;
         }
         break;
 
-    case LETK_IBUTTON_FSM_STATUS_WAIT_PRESS_AGIN:
-        if (pbtn->level == LETK_IBUTTON_LEVEL_PRESS)
+    case LETK_IBUTTON_STATUS_WAIT_PRESS_AGIN:
+        if (pbtn->io_status)
         {
             /* 按键按下事件 */
             pbtn->event = LETK_IBUTTON_EVENT_PRESS;
@@ -371,9 +368,9 @@ static void letk_ibutton_poll_one_button(letk_ibutton_t* pbtn)
             /* 清除计数器 */
             pbtn->internal_cnt = 0;
             /* 切换到按键再次按下状态 */
-            pbtn->fsm_status = LETK_IBUTTON_FSM_STATUS_PRESS_AGIN;
+            pbtn->status = LETK_IBUTTON_STATUS_PRESS_AGIN;
         }
-        else if (++(pbtn->internal_cnt) > pbtn->hit_again_ticks)
+        else if (++pbtn->internal_cnt >= pbtn->hit_again_ticks)
         {
             /* 超过连击间隔时间还未再次按下按键 */
             if (pbtn->click_cnt == 1)
@@ -392,34 +389,24 @@ static void letk_ibutton_poll_one_button(letk_ibutton_t* pbtn)
                 pbtn->event = LETK_IBUTTON_EVENT_MULTI_CLICK;
             }
             /* 切换到按键抬起状态，此次按键流程结束 */
-            pbtn->fsm_status = LETK_IBUTTON_FSM_STATUS_RELEASE;
+            pbtn->status = LETK_IBUTTON_STATUS_RELEASED;
         }
         break;
 
-    case LETK_IBUTTON_FSM_STATUS_PRESS_AGIN:
-        if (pbtn->level != LETK_IBUTTON_LEVEL_PRESS)
+    case LETK_IBUTTON_STATUS_PRESS_AGIN:
+        if (!pbtn->io_status)
         {
             /* 按键松开事件 */
             pbtn->event = LETK_IBUTTON_EVENT_RELEASE;
             /* 清除计数器 */
             pbtn->internal_cnt = 0;
             /* 切换到等待按键再次按下状态 */
-            pbtn->fsm_status = LETK_IBUTTON_FSM_STATUS_WAIT_PRESS_AGIN;
+            pbtn->status = LETK_IBUTTON_STATUS_WAIT_PRESS_AGIN;
         }
         break;
 
-    case LETK_IBUTTON_FSM_STATUS_WAIT_RELEASE:
-        if (pbtn->level == LETK_IBUTTON_LEVEL_PRESS)
-        {
-            if (++(pbtn->internal_cnt) > pbtn->long_repeat_ticks)
-            {
-                /* 清除计数 */
-                pbtn->internal_cnt = 0;
-                /* 继续按下，按键重复按下事件 */
-                pbtn->event = LETK_IBUTTON_EVENT_REPEAT;
-            }
-        }
-        else
+    case LETK_IBUTTON_STATUS_WAIT_RELEASE:
+        if (!pbtn->io_status)
         {
             /* 按键松开，按键抬起事件 */
             pbtn->event = LETK_IBUTTON_EVENT_RELEASE;
@@ -428,7 +415,14 @@ static void letk_ibutton_poll_one_button(letk_ibutton_t* pbtn)
             /* 清除连击计数 */
             pbtn->click_cnt = 0;
             /* 回到释放状态 */
-            pbtn->fsm_status = LETK_IBUTTON_FSM_STATUS_RELEASE;
+            pbtn->status = LETK_IBUTTON_STATUS_RELEASED;
+        }
+        else if (++pbtn->internal_cnt >= pbtn->long_repeat_ticks)
+        {
+            /* 清除计数 */
+            pbtn->internal_cnt = 0;
+            /* 继续按下，按键重复按下事件 */
+            pbtn->event = LETK_IBUTTON_EVENT_REPEAT;
         }
         break;
 
@@ -436,23 +430,28 @@ static void letk_ibutton_poll_one_button(letk_ibutton_t* pbtn)
         /* 异常，回到释放状态 */
         pbtn->internal_cnt = 0;
         pbtn->click_cnt = 0;
-        pbtn->fsm_status = LETK_IBUTTON_FSM_STATUS_RELEASE;
+        pbtn->status = LETK_IBUTTON_STATUS_RELEASED;
         break;
     }
 
     /* 有事件产生，执行回调 */
-    if (pbtn->event != LETK_IBUTTON_EVENT_NONE)
+    if ((pbtn->event != LETK_IBUTTON_EVENT_NONE) && (pbtn->event_cb != NULL))
     {
-        LETK_IBUTTON_EVENT_PROC(pbtn);
+        pbtn->event_cb(pbtn);
     }
 }
 
-/* 轮询所有按键 */
+/**
+ * @brief 轮询所有按键
+ * @note 此函数会依次每个按键进行轮询，有事件会执行相应事件的回调函数，
+ *       需要放到定期执行的定时器回调或者定时任务中，尽量不要放到中断中，
+ *       如果需要放到中断中，请对上面的按键初始化以及链表操作的函数进行
+ *       临界段保护，且执行事件的回调函数体尽量短小，当然中间使用了全局
+ *       或静态变量也要注意临界段保护
+ */
 void letk_ibutton_poll(void)
 {
-    letk_ibutton_t* pbtn;
-
-    for (pbtn = ibutton_mgr.p_list_head; pbtn != NULL; pbtn = pbtn->next)
+    for (letk_ibutton_t* pbtn = p_ibutton_head; pbtn != NULL; pbtn = pbtn->next)
     {
         letk_ibutton_poll_one_button(pbtn);
     }

@@ -1,21 +1,10 @@
 /*******************************************************************************
-** 文件名称：letk_cli.h
-** 文件作用：命令行接口
-** 编写作者：Tom Free 付瑞彪
-** 编写时间：2020-08-06
-** 文件备注：
-** 更新记录：
-**           2020-08-06 -> 创建文件
-**                                                             <Tom Free 付瑞彪>
-**           2021-03-18 -> 修改宏来适配不同编译器
-**                                                             <Tom Free 付瑞彪>
-**           2021-04-27 -> 增加STM8-IAR、ARM-MDK（AC5/AC6）支持，
-**                         优化编译器自动识别
-**                                                             <Tom Free 付瑞彪>
-**           2021-06-17 -> 增加自动命令注册和静态注册选项
-**                                                             <Tom Free 付瑞彪>
+** @file   letk_cli.h
+** @brief  命令行接口模块
+** @author 付瑞彪
+** @date   2022-05-29
 **
-**              Copyright (c) 2018-2022 付瑞彪 All Rights Reserved
+**       Copyright (c) 付瑞彪 All Rights Reserved
 **
 **       1 Tab == 4 Spaces     UTF-8     ANSI C Language(C99)
 *******************************************************************************/
@@ -152,6 +141,10 @@ void letk_cli_parse_char(const char ch);
 }
 #endif  /* __cplusplus */
 
+#else   /* LETK_CLI_ENABLE */
+/* 以下宏用于兼容导出方式，免得需要手动删除代码 */
+#define LETK_CLI_CMD_EXPORT(cmd_name, cmd_usage, cmd_cb)
+#define LETK_CLI_CMD_ALIAS(cmd_name, cmd_alias_str)
 #endif  /* LETK_CLI_ENABLE */
 
 #endif  /* __LETK_CLI_H__ */
