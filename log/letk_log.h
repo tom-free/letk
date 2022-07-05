@@ -111,4 +111,7 @@ void letk_log_output(letk_log_level_t level, const char* file, int line, const c
 #define LETK_LOG_ERROR(...)     (void)(0)
 #endif
 
+/* 日志打印 */
+#define LETK_LOG(lvl_tag, ...)  LETK_LOG_ ## lvl_tag(##__VA_ARGS__)
+
 #endif  /* __LETK_LOG_H__ */
