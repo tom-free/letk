@@ -170,8 +170,7 @@ letk_ibutton_result_t letk_ibutton_init(letk_ibutton_t* pbtn,
 ** 使用样例：letk_ibutton_result_t res = letk_ibutton_set_read_io_cb(&btn1, btn1_read);
 ** 函数备注：
 *******************************************************************************/
-letk_ibutton_result_t letk_ibutton_set_read_io_cb(letk_ibutton_t* pbtn,
-                                        letk_ibutton_read_io_cb_t* read_io_cb);
+letk_ibutton_result_t letk_ibutton_set_read_io_cb(letk_ibutton_t* pbtn, letk_ibutton_read_io_cb_t* read_io_cb);
 
 /*******************************************************************************
 ** 函数名称：letk_ibutton_set_event_cb
@@ -182,8 +181,7 @@ letk_ibutton_result_t letk_ibutton_set_read_io_cb(letk_ibutton_t* pbtn,
 ** 使用样例：letk_ibutton_result_t res = letk_ibutton_set_event_cb(&btn1, btn1_enevt);
 ** 函数备注：
 *******************************************************************************/
-letk_ibutton_result_t letk_ibutton_set_event_cb(letk_ibutton_t* pbtn,
-                                        letk_ibutton_event_cb_t* event_cb);
+letk_ibutton_result_t letk_ibutton_set_event_cb(letk_ibutton_t* pbtn, letk_ibutton_event_cb_t* event_cb);
 
 /*******************************************************************************
 ** 函数名称：letk_ibutton_set_click_cnt_max
@@ -194,8 +192,7 @@ letk_ibutton_result_t letk_ibutton_set_event_cb(letk_ibutton_t* pbtn,
 ** 使用样例：letk_ibutton_result_t res = letk_ibutton_set_click_cnt_max(&btn1, 10);
 ** 函数备注：
 *******************************************************************************/
-letk_ibutton_result_t letk_ibutton_set_click_cnt_max(letk_ibutton_t* pbtn,
-                                        uint8_t click_cnt_max);
+letk_ibutton_result_t letk_ibutton_set_click_cnt_max(letk_ibutton_t* pbtn, uint8_t click_cnt_max);
 
 /*******************************************************************************
 ** 函数名称：letk_ibutton_set_debounce_ticks
@@ -206,8 +203,7 @@ letk_ibutton_result_t letk_ibutton_set_click_cnt_max(letk_ibutton_t* pbtn,
 ** 使用样例：letk_ibutton_result_t res = letk_ibutton_set_debounce_ticks(&btn1, 10);
 ** 函数备注：
 *******************************************************************************/
-letk_ibutton_result_t letk_ibutton_set_debounce_ticks(letk_ibutton_t* pbtn,
-                                        uint8_t debounce_ticks);
+letk_ibutton_result_t letk_ibutton_set_debounce_ticks(letk_ibutton_t* pbtn, uint8_t debounce_ticks);
 
 /*******************************************************************************
 ** 函数名称：letk_ibutton_set_hit_again_ticks
@@ -218,8 +214,7 @@ letk_ibutton_result_t letk_ibutton_set_debounce_ticks(letk_ibutton_t* pbtn,
 ** 使用样例：letk_ibutton_result_t res = letk_ibutton_set_hit_again_ticks(&btn1, 10);
 ** 函数备注：
 *******************************************************************************/
-letk_ibutton_result_t letk_ibutton_set_hit_again_ticks(letk_ibutton_t* pbtn,
-                                        uint8_t hit_again_ticks);
+letk_ibutton_result_t letk_ibutton_set_hit_again_ticks(letk_ibutton_t* pbtn, uint8_t hit_again_ticks);
 
 /*******************************************************************************
 ** 函数名称：letk_ibutton_set_long_press_ticks
@@ -230,8 +225,7 @@ letk_ibutton_result_t letk_ibutton_set_hit_again_ticks(letk_ibutton_t* pbtn,
 ** 使用样例：letk_ibutton_result_t res = letk_ibutton_set_long_press_ticks(&btn1, 10);
 ** 函数备注：
 *******************************************************************************/
-letk_ibutton_result_t letk_ibutton_set_long_press_ticks(letk_ibutton_t* pbtn,
-                                        uint8_t long_press_ticks);
+letk_ibutton_result_t letk_ibutton_set_long_press_ticks(letk_ibutton_t* pbtn, uint8_t long_press_ticks);
 
 /*******************************************************************************
 ** 函数名称：letk_ibutton_set_long_repeat_ticks
@@ -242,8 +236,7 @@ letk_ibutton_result_t letk_ibutton_set_long_press_ticks(letk_ibutton_t* pbtn,
 ** 使用样例：letk_ibutton_result_t res = letk_ibutton_set_long_repeat_ticks(&btn1, 10);
 ** 函数备注：
 *******************************************************************************/
-letk_ibutton_result_t letk_ibutton_set_long_repeat_ticks(letk_ibutton_t* pbtn,
-                                        uint8_t long_repeat_ticks);
+letk_ibutton_result_t letk_ibutton_set_long_repeat_ticks(letk_ibutton_t* pbtn, uint8_t long_repeat_ticks);
 
 /*******************************************************************************
 ** 函数名称：letk_ibutton_add

@@ -113,8 +113,7 @@ letk_ibutton_result_t letk_ibutton_init(letk_ibutton_t* pbtn,
 }
 
 /* 设置读取IO回调 */
-letk_ibutton_result_t letk_ibutton_set_read_io_cb(letk_ibutton_t* pbtn,
-                                        letk_ibutton_read_io_cb_t* read_io_cb)
+letk_ibutton_result_t letk_ibutton_set_read_io_cb(letk_ibutton_t* pbtn, letk_ibutton_read_io_cb_t* read_io_cb)
 {
     if ((pbtn == NULL) ||
         (read_io_cb == NULL))
@@ -128,8 +127,7 @@ letk_ibutton_result_t letk_ibutton_set_read_io_cb(letk_ibutton_t* pbtn,
 }
 
 /* 设置事件处理回调 */
-letk_ibutton_result_t letk_ibutton_set_event_cb(letk_ibutton_t* pbtn,
-                                        letk_ibutton_event_cb_t* event_cb)
+letk_ibutton_result_t letk_ibutton_set_event_cb(letk_ibutton_t* pbtn, letk_ibutton_event_cb_t* event_cb)
 {
     if ((pbtn == NULL) ||
         (event_cb == NULL))
@@ -143,8 +141,7 @@ letk_ibutton_result_t letk_ibutton_set_event_cb(letk_ibutton_t* pbtn,
 }
 
 /* 设置连击最大次数 */
-letk_ibutton_result_t letk_ibutton_set_click_cnt_max(letk_ibutton_t* pbtn,
-                                        uint8_t click_cnt_max)
+letk_ibutton_result_t letk_ibutton_set_click_cnt_max(letk_ibutton_t* pbtn, uint8_t click_cnt_max)
 {
     if ((pbtn == NULL) ||
         (click_cnt_max == 0))
@@ -158,8 +155,7 @@ letk_ibutton_result_t letk_ibutton_set_click_cnt_max(letk_ibutton_t* pbtn,
 }
 
 /* 设置防抖周期 */
-letk_ibutton_result_t letk_ibutton_set_debounce_ticks(letk_ibutton_t* pbtn,
-                                        uint8_t debounce_ticks)
+letk_ibutton_result_t letk_ibutton_set_debounce_ticks(letk_ibutton_t* pbtn, uint8_t debounce_ticks)
 {
     if ((pbtn == NULL) ||
         (debounce_ticks == 0))
@@ -173,8 +169,7 @@ letk_ibutton_result_t letk_ibutton_set_debounce_ticks(letk_ibutton_t* pbtn,
 }
 
 /* 设置连击最大间隔时间周期 */
-letk_ibutton_result_t letk_ibutton_set_hit_again_ticks(letk_ibutton_t* pbtn,
-                                        uint8_t hit_again_ticks)
+letk_ibutton_result_t letk_ibutton_set_hit_again_ticks(letk_ibutton_t* pbtn, uint8_t hit_again_ticks)
 {
     if ((pbtn == NULL) ||
         (hit_again_ticks == 0))
@@ -188,8 +183,7 @@ letk_ibutton_result_t letk_ibutton_set_hit_again_ticks(letk_ibutton_t* pbtn,
 }
 
 /* 设置长按触发时间周期 */
-letk_ibutton_result_t letk_ibutton_set_long_press_ticks(letk_ibutton_t* pbtn,
-                                        uint8_t long_press_ticks)
+letk_ibutton_result_t letk_ibutton_set_long_press_ticks(letk_ibutton_t* pbtn, uint8_t long_press_ticks)
 {
     if ((pbtn == NULL) ||
         (long_press_ticks == 0))
@@ -203,8 +197,7 @@ letk_ibutton_result_t letk_ibutton_set_long_press_ticks(letk_ibutton_t* pbtn,
 }
 
 /* 设置长按重复按下事件触发时间周期 */
-letk_ibutton_result_t letk_ibutton_set_long_repeat_ticks(letk_ibutton_t* pbtn,
-                                        uint8_t long_repeat_ticks)
+letk_ibutton_result_t letk_ibutton_set_long_repeat_ticks(letk_ibutton_t* pbtn, uint8_t long_repeat_ticks)
 {
     if ((pbtn == NULL) ||
         (long_repeat_ticks == 0))
