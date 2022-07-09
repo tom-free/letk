@@ -133,14 +133,14 @@ void letk_cli_put_int(const int num);
 void letk_cli_put_str(const char* const str);
 
 /**
- * @brief 清除当前行的显示内容
+ * @brief 保存当前上下文内容并清除当前行的显示内容
  */
-void letk_cli_clear_line(void);
+void letk_cli_save_context(void);
 
 /**
- * @brief 重新显示当前行的内容
+ * @brief 恢复上下文并重新显示当前行的内容
  */
-void letk_cli_put_line(void);
+void letk_cli_restore_context(void);
 
 /**
  * @brief 解析一个字符
