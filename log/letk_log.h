@@ -29,6 +29,9 @@
 #define LETK_LOG_LEVEL          LETK_LOG_LEVEL_NONE
 #endif  /* LETK_LOG_LEVEL */
 
+/* 是否使能LOG功能 */
+#define LETK_LOG_ENABLE         (LETK_LOG_LEVEL < LETK_LOG_LEVEL_NONE)
+
 #if LETK_LOG_LEVEL < LETK_LOG_LEVEL_NONE
 
 #include <stdint.h>
