@@ -760,7 +760,7 @@ void letk_cli_parse_char(const char ch)
 #endif  /* LETK_CLI_CC */
 
 /* 内部命令-help */
-CMD_CB_CALL_PREFIX int letk_cli_internal_cmd_help(int argc, char* argv[])
+CMD_CB_CALL_PREFIX void letk_cli_internal_cmd_help(int argc, char* argv[])
 {
     const letk_cli_cmd_t* p_temp;
     const letk_cli_cmd_t* p_temp1;
@@ -820,8 +820,6 @@ CMD_CB_CALL_PREFIX int letk_cli_internal_cmd_help(int argc, char* argv[])
     {
         letk_cli_put_str("Too many args! Only support less then 2 args\r\n");
     }
-
-    return 0;
 }
 /* 导出help命令 */
 LETK_CLI_CMD_EXPORT(help,
@@ -832,7 +830,7 @@ LETK_CLI_CMD_ALIAS(help, "?");
 
 #if LETK_CLI_HISTORY_ENABLE
 /* 内部命令-history */
-CMD_CB_CALL_PREFIX int letk_cli_internal_cmd_history(int argc, char* argv[])
+CMD_CB_CALL_PREFIX void letk_cli_internal_cmd_history(int argc, char* argv[])
 {
     unsigned int i, count, num;
 
@@ -855,7 +853,7 @@ CMD_CB_CALL_PREFIX int letk_cli_internal_cmd_history(int argc, char* argv[])
     else
     {
         letk_cli_put_str("Too many args! Only support less then 2 args\r\n");
-        return 0;
+        return;
     }
 
     for (i = 0, count = letk_cli_mgr.history_index; i < num; i++)
@@ -872,8 +870,6 @@ CMD_CB_CALL_PREFIX int letk_cli_internal_cmd_history(int argc, char* argv[])
         letk_cli_put_str(letk_cli_mgr.history_str[count]);
         letk_cli_put_str("\r\n");
     }
-
-    return 0;
 }
 /* 导出history命令 */
 LETK_CLI_CMD_EXPORT(history,
@@ -882,7 +878,7 @@ LETK_CLI_CMD_EXPORT(history,
 #endif  /* LETK_CLI_HISTORY_ENABLE */
 
 /* 内部命令-test */
-CMD_CB_CALL_PREFIX int letk_cli_internal_cmd_test(int argc, char* argv[])
+CMD_CB_CALL_PREFIX void letk_cli_internal_cmd_test(int argc, char* argv[])
 {
     for (int i = 0; i < argc; i++)
     {
@@ -892,7 +888,6 @@ CMD_CB_CALL_PREFIX int letk_cli_internal_cmd_test(int argc, char* argv[])
         letk_cli_put_str(argv[i]);
         letk_cli_put_str("\r\n");
     }
-    return 0;
 }
 /* 导出test命令 */
 LETK_CLI_CMD_EXPORT(test,
