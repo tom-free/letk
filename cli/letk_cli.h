@@ -23,7 +23,7 @@ extern "C" {
 /* 输出字符回调函数 */
 typedef void letk_cli_out_char_cb_t(const char);
 /* 命令执行回调函数 */
-typedef int letk_cli_cmd_cb_t(int, char*[]);
+typedef void letk_cli_cmd_cb_t(int, char*[]);
 
 /* 命令结构定义 */
 typedef struct _letk_cli_cmd_t
@@ -72,13 +72,13 @@ extern const letk_cli_cmd_t letk_cli_static_cmds[];
 
 /* 以下命令需要用户手动放入letk_cli_static_cmds中 */
 /* 内部命令-help */
-int letk_cli_internal_cmd_help(int argc, char* argv[]);
+void letk_cli_internal_cmd_help(int argc, char* argv[]);
 #if LETK_CLI_HISTORY_ENABLE
 /* 内部命令-history */
-int letk_cli_internal_cmd_history(int argc, char* argv[]);
+void letk_cli_internal_cmd_history(int argc, char* argv[]);
 #endif  /* LETK_CLI_HISTORY_ENABLE */
 /* 内部命令-test */
-int letk_cli_internal_cmd_test(int argc, char* argv[]);
+void letk_cli_internal_cmd_test(int argc, char* argv[]);
 #endif  /* LETK_CLI_CMD_REG_BY_CC_SECTION */
 
 /**
@@ -122,14 +122,14 @@ void letk_cli_put_int(const int num);
 void letk_cli_put_str(const char* const str);
 
 /**
- * @brief 清除当前行的显示内容
+ * @brief 保存当前上下文内容并清除当前行的显示内容
  */
-void letk_cli_clear_line(void);
+void letk_cli_save_context(void);
 
 /**
- * @brief 重新显示当前行的内容
+ * @brief 恢复上下文并重新显示当前行的内容
  */
-void letk_cli_put_line(void);
+void letk_cli_restore_context(void);
 
 /**
  * @brief 解析一个字符

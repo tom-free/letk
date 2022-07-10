@@ -25,6 +25,9 @@
 #define LETK_LOG_LEVEL          LETK_LOG_LEVEL_NONE
 #endif  /* LETK_LOG_LEVEL */
 
+/* 是否使能LOG功能 */
+#define LETK_LOG_ENABLE         (LETK_LOG_LEVEL < LETK_LOG_LEVEL_NONE)
+
 #if LETK_LOG_LEVEL < LETK_LOG_LEVEL_NONE
 
 #include <stdint.h>
@@ -108,6 +111,7 @@ void letk_log_output(letk_log_level_t level, const char* file, int line, const c
 #endif
 
 #if LETK_LOG_ASSERT_ENABLE
+/* 断言宏 */
 #define LETK_LOG_ASSERT(expr)   do                  \
                                 {                   \
                                     if (!(expr))    \
@@ -119,5 +123,8 @@ void letk_log_output(letk_log_level_t level, const char* file, int line, const c
 #else
 #define LETK_LOG_ASSERT(expr)   (void)(0)
 #endif
+
+/* 日志打印 */
+#define LETK_LOG(lvl_tag, ...)  LETK_LOG_ ## lvl_tag(__VA_ARGS__)
 
 #endif  /* __LETK_LOG_H__ */
