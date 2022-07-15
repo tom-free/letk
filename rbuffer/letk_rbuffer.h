@@ -19,7 +19,9 @@
 #define __LETK_RBUFFER_H__
 
 #include <stdint.h>
+#ifndef __cplusplus
 #include <stdbool.h>
+#endif  /* __cplusplus */
 
 #ifdef __cplusplus
 extern "C" {

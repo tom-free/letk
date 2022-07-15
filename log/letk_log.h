@@ -26,16 +26,24 @@
 #define LETK_LOG_LEVEL_WARNING  2   /* 警告信息 */
 #define LETK_LOG_LEVEL_ERROR    3   /* 错误信息 */
 #define LETK_LOG_LEVEL_NONE     4   /* 不打印任何日志 */
-#define LETK_LOG_LEVEL_NUM      4   /* 日志等级数量 */
 
+/* 取默认日志等级 */
 #ifndef LETK_LOG_LEVEL
 #define LETK_LOG_LEVEL          LETK_LOG_LEVEL_NONE
 #endif  /* LETK_LOG_LEVEL */
 
 /* 是否使能LOG功能 */
 #define LETK_LOG_ENABLE         (LETK_LOG_LEVEL < LETK_LOG_LEVEL_NONE)
+/* 是否使能DEBUG信息 */
+#define LETK_LOG_DEBUG_ENABLE   (LETK_LOG_LEVEL <= LETK_LOG_LEVEL_DEBUG)
+/* 是否使能INFO信息 */
+#define LETK_LOG_INFO_ENABLE    (LETK_LOG_LEVEL <= LETK_LOG_LEVEL_INFO)
+/* 是否使能WARNING信息 */
+#define LETK_LOG_WARNING_ENABLE (LETK_LOG_LEVEL <= LETK_LOG_LEVEL_WARNING)
+/* 是否使能ERROR信息 */
+#define LETK_LOG_ERROR_ENABLE   (LETK_LOG_LEVEL <= LETK_LOG_LEVEL_ERROR)
 
-#if LETK_LOG_LEVEL < LETK_LOG_LEVEL_NONE
+#if LETK_LOG_ENABLE
 
 #include <stdint.h>
 
@@ -90,35 +98,35 @@ void letk_log_output(letk_log_level_t level, const char* file, int line, const c
 }   /* extern "C" */
 #endif  /* __cplusplus */
 
-#endif  /* LETK_LOG_LEVEL < LETK_LOG_LEVEL_NONE */
+#endif  /* LETK_LOG_ENABLE */
 
 /* 日志输出宏 */
-#if LETK_LOG_LEVEL <= LETK_LOG_LEVEL_DEBUG
+#if LETK_LOG_DEBUG_ENABLE
 #define LETK_LOG_DEBUG(...)     letk_log_output(LETK_LOG_LEVEL_DEBUG, __FILE__, __LINE__, __func__, __VA_ARGS__);
-#else
+#else   /* LETK_LOG_DEBUG_ENABLE */
 #define LETK_LOG_DEBUG(...)     (void)(0)
-#endif
+#endif  /* LETK_LOG_DEBUG_ENABLE */
 
-#if LETK_LOG_LEVEL <= LETK_LOG_LEVEL_INFO
+#if LETK_LOG_INFO_ENABLE
 #define LETK_LOG_INFO(...)      letk_log_output(LETK_LOG_LEVEL_INFO, __FILE__, __LINE__, __func__, __VA_ARGS__);
-#else
+#else   /* LETK_LOG_INFO_ENABLE */
 #define LETK_LOG_INFO(...)      (void)(0)
-#endif
+#endif  /* LETK_LOG_INFO_ENABLE */
 
-#if LETK_LOG_LEVEL <= LETK_LOG_LEVEL_WARNING
+#if LETK_LOG_WARNING_ENABLE
 #define LETK_LOG_WARNING(...)   letk_log_output(LETK_LOG_LEVEL_WARNING, __FILE__, __LINE__, __func__, __VA_ARGS__);
-#else
+#else   /* LETK_LOG_WARNING_ENABLE */
 #define LETK_LOG_WARNING(...)   (void)(0)
-#endif
+#endif  /* LETK_LOG_WARNING_ENABLE */
 
-#if LETK_LOG_LEVEL <= LETK_LOG_LEVEL_ERROR
+#if LETK_LOG_ERROR_ENABLE
 #define LETK_LOG_ERROR(...)     letk_log_output(LETK_LOG_LEVEL_ERROR, __FILE__, __LINE__, __func__, __VA_ARGS__);
-#else
+#else   /* LETK_LOG_ERROR_ENABLE */
 #define LETK_LOG_ERROR(...)     (void)(0)
-#endif
+#endif  /* LETK_LOG_ERROR_ENABLE */
 
-#if LETK_LOG_ASSERT_ENABLE
-/* 断言宏 */
+#if LETK_LOG_ASSERT_ENABLE && LETK_LOG_ERROR_ENABLE
+/* 断言宏，归为错误，必须开启错误宏后才生效 */
 #define LETK_LOG_ASSERT(expr)   do                  \
                                 {                   \
                                     if (!(expr))    \
@@ -127,11 +135,11 @@ void letk_log_output(letk_log_level_t level, const char* file, int line, const c
                                         for (;;);   \
                                     }               \
                                 } while (0)
-#else
+#else   /* LETK_LOG_ASSERT_ENABLE && LETK_LOG_ERROR_ENABLE */
 #define LETK_LOG_ASSERT(expr)   (void)(0)
-#endif
+#endif  /* LETK_LOG_ASSERT_ENABLE && LETK_LOG_ERROR_ENABLE */
 
-/* 日志打印 */
+/* 通用日志打印宏，lvl_tag：打印等级，可取：DEBUG/WARNING/INFO/ERROR */
 #define LETK_LOG(lvl_tag, ...)  LETK_LOG_ ## lvl_tag(__VA_ARGS__)
 
 #endif  /* __LETK_LOG_H__ */

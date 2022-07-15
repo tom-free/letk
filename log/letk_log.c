@@ -18,7 +18,7 @@
 
 #include "letk_log.h"
 
-#if LETK_LOG_LEVEL < LETK_LOG_LEVEL_NONE
+#if LETK_LOG_ENABLE
 
 #include <stdarg.h>
 #include <string.h>
@@ -30,7 +30,7 @@ extern 'C' {
 #endif  /* __cplusplus */
 
 /* 日志前缀 */
-static const char* const log_prefix[LETK_LOG_LEVEL_NUM] =
+static const char* const log_prefix[] =
 {
     [LETK_LOG_LEVEL_DEBUG]   = "[D] ",
     [LETK_LOG_LEVEL_INFO]    = "[I] ",
@@ -82,7 +82,7 @@ void letk_log_output(letk_log_level_t level, const char* file, int line, const c
     int index, length, remain, posit;
     va_list args;
 
-    if (level >= LETK_LOG_LEVEL_NUM)
+    if (level >= LETK_LOG_LEVEL_NONE)
     {
         return;
     }
@@ -153,4 +153,4 @@ void letk_log_output(letk_log_level_t level, const char* file, int line, const c
 }
 #endif  /* __cplusplus */
 
-#endif  /* LETK_LOG_LEVEL >= LETK_LOG_LEVEL_NONE */
+#endif  /* LETK_LOG_ENABLE */
