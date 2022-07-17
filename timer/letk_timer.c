@@ -17,7 +17,8 @@
 ***********************************************************************************************************************/
 
 #include "letk_timer.h"
-#include "letk_ticks.h"
+#include "../ticks/letk_ticks.h"
+#include "../ainit/letk_ainit.h"
 #include <stddef.h>
 
 #ifdef __cplusplus
@@ -28,6 +29,20 @@ extern 'C' {
 static letk_timer_t* p_timer_head = NULL;
 /* 标识运行回调期间链表是否发生变化 */
 static bool list_changed = false;
+
+/**
+ * @brief 定时器管理器参数初始化
+ * @note 用于休眠时内存断电的场合，唤醒后需要调用此函数重新初始化内存数据
+ *       此函数必须在定时器设置相关的函数之前调用，不能在之后或中间调用
+ */
+static void letk_timer_mgr_init(void)
+{
+    /* 头指针为空 */
+    p_timer_head = NULL;
+    /* 默认为链表未更改 */
+    list_changed = false;
+}
+LETK_SOFT_INIT_EXPORT(letk_timer_mgr_init);
 
 /**
  * @brief 初始化定时器参数

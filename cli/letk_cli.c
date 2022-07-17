@@ -20,6 +20,8 @@
 
 #if LETK_CLI_ENABLE
 
+#include "../ainit/letk_ainit.h"
+
 #include <stdint.h>
 #include <stddef.h>
 #include <string.h>
@@ -92,7 +94,7 @@ static const letk_cli_cmd_t* letk_cli_search_cmd(const char* const cmd_name)
 }
 
 /* 初始化cli管理器 */
-void letk_cli_mgr_init(void)
+static void letk_cli_mgr_init(void)
 {
 #if (LETK_CLI_CC == LETK_CLI_CC_MDK_ARM)
     extern const int letk_cli_cmd_section$$Base;
@@ -120,6 +122,7 @@ void letk_cli_mgr_init(void)
     memset(letk_cli_mgr.history_str, 0, sizeof(letk_cli_mgr.history_str));
 #endif  /* LETK_CLI_HISTORY_ENABLE */
 }
+LETK_SOFT_INIT_EXPORT(letk_cli_mgr_init);
 
 /* 设置输出字符回调函数 */
 void letk_cli_set_out_char_cb(letk_cli_out_char_cb_t *out_char_cb)

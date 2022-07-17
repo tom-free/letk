@@ -17,56 +17,48 @@
 #ifndef __LETK_AINIT_H__
 #define __LETK_AINIT_H__
 
-#define  ANONY_CONN(type, var, line)  type  var##line
-#define  ANONY_DEF(type,prefix,line)  ANONY_CONN(type, prefix, line)
-#define  ANONY_TYPE(type,prefix)      ANONY_DEF(type, prefix, __LINE__)
-
-#define container_of(ptr, type, member) ( \
-    (type *)( (char *)(ptr) - offsetof(type,member) ))
-
-#if defined(__CC_ARM) || defined(__GNUC__) /* ARM,GCC*/
+#if defined(__CC_ARM) || defined(__GNUC__)
+/* Keil, GCC */
 #define LETK_AINIT_CC_SECTION(x)    __attribute__((section(x)))
 #define LETK_AINIT_CC_UNUSED        __attribute__((unused))
 #define LETK_AINIT_CC_USED          __attribute__((used))
 #define LETK_AINIT_CC_ALIGN(n)      __attribute__((aligned(n)))
 #define LETK_AINIT_CC_WEAK          __attribute__((weak))
-#elif defined (__ICCARM__)              /*IAR */
+#elif defined (__ICCARM__)
+/* IAR */
 #define LETK_AINIT_CC_SECTION(x)    @ x
 #define LETK_AINIT_CC_UNUSED
 #define LETK_AINIT_CC_USED          __root
 #define LETK_AINIT_CC_WEAK          __weak
 #else
-#error "Current tool chain haven't supported yet!"
+#error Not support the compiler
 #endif
 
-#define LETK_AINIT_CC_USED              __attribute__((__used__))
-#define LETK_AINIT_CC_SECTION(name)     __attribute__((__section__(name)))
+/* 自动初始化函数原型 */
+typedef void letk_ainit_fn_t(void);
 
-#define LETK_AINIT_LEVEL(fn, level) \
-    LETK_AINIT_CC_USED static const void* _letk_ainit_##fn LETK_AINIT_CC_SECTION(".letk_ainit." #level) = fn;
+/* 自动初始化函数等级导出 */
+#define LETK_AINIT_LEVEL(fn, level)     \
+    LETK_AINIT_CC_USED static letk_ainit_fn_t* _letk_ainit_##fn LETK_AINIT_CC_SECTION(".letk_ainit." #level) = fn;
 
-#define pure_initcall(fn)       LETK_AINIT_LEVEL(fn, 0) //可用作系统时钟初始化
-#define fs_initcall(fn)         LETK_AINIT_LEVEL(fn, 1) //tick和调试接口初始化
-#define device_initcall(fn)     LETK_AINIT_LEVEL(fn, 2) //驱动初始化
-#define late_initcall(fn)       LETK_AINIT_LEVEL(fn, 3) //传感器初始化
-
-
-/*模块初始化项*/
-typedef struct {
-    const char *name;               //模块名称
-    void(*init)(void);             //初始化接口
-}init_item_t;
-
-#define __module_initialize(name,func,level)           \
-    LETK_AINIT_CC_USED ANONY_TYPE(const init_item_t, init_tbl_##func)\
-    LETK_AINIT_CC_SECTION("init.item."level) = {name,func}
+/* 最开始初始化，用于特殊场合，例如关中断、设置芯片运行环境等 */
+#define LETK_FIRST_INIT_EXPORT(fn)      LETK_AINIT_LEVEL(fn, 1)
+/* 软件包初始化 */
+#define LETK_SOFT_INIT_EXPORT(fn)       LETK_AINIT_LEVEL(fn, 2)
+/* 板级初始化 */
+#define LETK_BOARD_INIT_EXPORT(fn)      LETK_AINIT_LEVEL(fn, 3)
+/* 外围设备初始化 */
+#define LETK_DEVICE_INIT_EXPORT(fn)     LETK_AINIT_LEVEL(fn, 4)
+/* 组件初始化 */
+#define LETK_COMPONENT_INIT_EXPORT(fn)  LETK_AINIT_LEVEL(fn, 5)
+/* 应用层初始化 */
+#define LETK_APP_INIT_EXPORT(fn)        LETK_AINIT_LEVEL(fn, 6)
+/* 最后期初始化，用于特殊场合，例如开中断、启动看门狗等 */
+#define LETK_FINALLY_INIT_EXPORT(fn)    LETK_AINIT_LEVEL(fn, 7)
 
 /**
  * @brief 自动初始化调用
  */
 void letk_auto_init(void);
-
-pure_initcall(letk_auto_init);
-__module_initialize("init", letk_auto_init, 0);
 
 #endif  /* __LETK_AINIT_H__ */

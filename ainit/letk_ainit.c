@@ -16,15 +16,23 @@
 ***********************************************************************************************************************/
 
 #include "letk_ainit.h"
+#include <stddef.h>
 
-/* 自动初始化函数原型 */
-typedef void letk_ainit_fn_t(void);
+/* 定义两个虚拟的初始化函数指示头和尾 */
+static void ai_start(void) {}
+LETK_AINIT_LEVEL(ai_start, 0);
+static void ai_end(void) {}
+LETK_AINIT_LEVEL(ai_end, 8);
 
 /**
  * @brief 自动初始化调用
  */
 void letk_auto_init(void)
 {
+    letk_ainit_fn_t** pfn;
 
+    for (pfn = &_letk_ainit_ai_start; pfn < &_letk_ainit_ai_end; pfn++)
+    {
+        (*pfn)();
+    }
 }
-

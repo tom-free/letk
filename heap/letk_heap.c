@@ -17,7 +17,8 @@
 
 #include "letk_heap_cfg.h"
 #include "letk_heap.h"
-#include "letk_log.h"
+#include "../ainit/letk_ainit.h"
+#include "../log/letk_log.h"
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -49,18 +50,16 @@ static bool letk_heap_init_flag = false;
 
 /**
  * @brief   初始化内存堆
- * @return  初始化结果
  */
-bool letk_heap_init(void)
+static void letk_heap_init(void)
 {
     /* 清空map表 */
     memset(letk_heap_flag_map, LETK_HEAP_FLAG_FREE, sizeof(letk_heap_flag_map));
     letk_heap_init_flag = true;
 
     LETK_HEAP_LOG_DEBUG("letk_heap_init ok");
-
-    return true;
 }
+LETK_SOFT_INIT_EXPORT(letk_heap_init);
 
 /**
  * @brief   内存申请

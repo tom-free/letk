@@ -17,6 +17,7 @@
 ***********************************************************************************************************************/
 
 #include "letk_ibutton.h"
+#include "../ainit/letk_ainit.h"
 #include <stddef.h>
 
 #ifdef __cplusplus
@@ -63,11 +64,12 @@ static letk_ibutton_t* p_ibutton_head = NULL;
  * @note 用于休眠时内存断电的场合，唤醒后需要调用此函数重新初始化内存数据
  *       此函数必须在按键设置相关的函数之前调用，不能在之后或中间调用
  */
-void letk_ibutton_mgr_init(void)
+static void letk_ibutton_mgr_init(void)
 {
     /* 头指针为空 */
     p_ibutton_head = NULL;
 }
+LETK_SOFT_INIT_EXPORT(letk_ibutton_mgr_init);
 
 /**
  * @brief 按键对象初始化

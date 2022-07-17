@@ -1,7 +1,7 @@
 /***********************************************************************************************************************
-** 文件描述：内存堆管理(动态内存管理)头文件
+** 文件描述：LETK头文件，提供给开发者的接口头文件
 ** 创建作者：付瑞彪(Tom Free)
-** 创建日期：2022年7月5日
+** 创建日期：2022年7月17日
 ** 编码格式：UTF-8编码
 ** 编程语言：C语言，C99标准
 ** 缩进格式：4个空格键
@@ -11,27 +11,29 @@
 **
 ** 修改记录
 ** 修改日期         修改作者        修改内容
-** 2022年7月5日     付瑞彪          创建文件，初次版本
+** 2022年7月17日    付瑞彪          创建文件，初次版本
 **
 ***********************************************************************************************************************/
-#ifndef __LETK_HEAP_H__
-#define __LETK_HEAP_H__
+#ifndef __LETK_H__
+#define __LETK_H__
 
+/* LETK */
+#include "ainit/letk_ainit.h"
+#include "cli/letk_cli.h"
+#include "heap/letk_heap.h"
+#include "ibutton/letk_ibutton.h"
+#include "log/letk_log.h"
+#include "rbuffer/letk_rbuffer.h"
+#include "ticks/letk_ticks.h"
+#include "timer/letk_timer.h"
+
+/* 标准库 */
+#include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include <stddef.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
-/**
- * @brief   内存申请
- * @param   size 内存大小
- * @return  内存地址
- */
-void* letk_heap_alloc(size_t size);
-
-/**
- * @brief   内存释放
- * @param   ptr 内存指针
- */
-void letk_heap_free(void* const ptr);
-
-#endif  /* __LETK_HEAP_H__ */
+#endif  /* __LETK_H__ */
